@@ -1,0 +1,45 @@
+# Source
+src/
+*.ts
+*.tsx
+!dist/**/*.ts
+!dist/**/*.tsx
+
+# Config
+tsconfig.json
+vite.config.ts
+vitest.config.ts
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+test/
+tests/
+__tests__/
+
+# Documentation
+docs/
+
+# Development
+.vscode/
+.idea/
+*.log
+*.tmp
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.github/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Other
+README.md
+AGENTS.md
+.npmignore

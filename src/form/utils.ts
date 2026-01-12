@@ -25,8 +25,10 @@ function findFieldByName(name: string, fields: Field[]): Field | null {
     let result: Array<{ key: string; index: number | null; prefixs: any[] }> = []
     for (let part of parts) {
       if (part.includes('[')) {
-        let [key, index] = part.split('[')
-        index = parseInt(index.replace(']', ''))
+        let parts = part.split('[')
+        let key = parts[0]
+        let indexStr = parts[1]?.replace(']', '')
+        let index = indexStr ? parseInt(indexStr, 10) : -1
         result.push({ key, index, prefixs: [...result] })
       } else {
         result.push({ key: part, index: null, prefixs: [...result] })
@@ -35,9 +37,9 @@ function findFieldByName(name: string, fields: Field[]): Field | null {
     return result
   }
 
-  let pathParts = parsePath(name)
+   let pathParts = parsePath(name)
   let currentFields = fields
-  let field: Field | undefined
+  let field: Field | null = null
   for (let { key, index, prefixs } of pathParts) {
     let trueKey: string[] = [key]
     for (let index2 = prefixs.length - 1; index2 >= 0; index2--) {
@@ -49,6 +51,7 @@ function findFieldByName(name: string, fields: Field[]): Field | null {
       }
     }
     field = searchFields(trueKey.join('.'), currentFields)
+    if (!field) return null
     if (field) {
       if (index !== null && field.items && field.items.fields) {
         currentFields = field.items.fields

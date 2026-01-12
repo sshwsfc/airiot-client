@@ -25,3 +25,7 @@ pnpm-debug.log*
 .env
 .env.local
 .build_stats.html
+
+# Documentation
+docs/.vitepress/cache
+docs/.vitepress/dist

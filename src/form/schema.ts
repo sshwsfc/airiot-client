@@ -108,25 +108,29 @@ const canonicalTitleMap = (titleMap: any, originalEnum?: any[]): Array<{ name: s
 }
 
 const convert = (schema: SchemaField, options?: ConvertOptions): FormField => {
-  const opts: ConvertOptions = options || {}
+  const opts: ConvertOptions = { ...options }
   if (opts.path === undefined) {
     opts.path = []
   }
   if (opts.lookup === undefined) {
     opts.lookup = {}
   }
+  const initialField: FormField = {
+    key: '',
+    name: ''
+  }
   return globalSchemaConverters.reduce((prve, converter) => {
     return converter(prve, schema, opts)
-  }, opts.global && opts.global.formDefaults ? cloneDeep(opts.global.formDefaults) : {})
+  }, opts.global && opts.global.formDefaults ? cloneDeep({ ...initialField, ...opts.global.formDefaults }) : initialField)
 }
 
 const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOptions) => FormField> = [
   // all form field
   (f: FormField, schema: SchemaField, options: ConvertOptions) => {
-    const { path, readonly, required, lookup } = options
+  const { path, readonly, required, lookup } = options
 
-    const fieldKey = path.length > 0 ? path[path.length - 1] : undefined
-    f.key = path.join('.')
+  const fieldKey = path && path.length > 0 ? path[path.length - 1] : undefined
+    f.key = path ? path.join('.') : ''
 
     f.name = f.key
     f.label = schema.title || (fieldKey ? startCase(fieldKey) : '')
@@ -204,7 +208,7 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
           .concat(keys.slice(idx + 1))
       }
 
-      const fields = keys.filter(key => opts.ignore!.indexOf(key) === -1).map(key => {
+      const fields = keys.filter((key: string) => opts.ignore!.indexOf(key) === -1).map((key: string) => {
         opts.path = [...options.path!, key]
         return props[key] !== undefined
           ? merge(convert(props[key]!, opts), form[key] || {})
