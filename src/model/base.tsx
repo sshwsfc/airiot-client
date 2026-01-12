@@ -123,7 +123,7 @@ const ModelInitial = ({ model, initialValues, children, query }: ModelInitialPro
   return !loading ? <>{children}</> : null
 }
 
-interface ModelProps {
+export interface ModelProps {
   name?: string
   schema?: ModelSchema
   modelKey?: string

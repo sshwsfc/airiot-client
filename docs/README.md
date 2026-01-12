@@ -108,7 +108,7 @@ function UserForm() {
 ### 模型使用示例
 
 ```typescript
-import { Model, useModel, hooks } from '@airiot/client'
+import { Model, useModelList } from '@airiot/client'
 
 const userModel = {
   name: 'user',
@@ -121,12 +121,11 @@ const userModel = {
 }
 
 function UserList() {
-  const { items, loading } = hooks['model.list']()
-  const { model } = useModel()
+  const { items, loading } = useModelList()
 
   return (
     <Model model={userModel}>
-      {loading ? <Spinner /> : <Table data={items} columns={model.fields} />}
+      {loading ? <Spinner /> : <Table data={items} columns={userModel.properties} />}
     </Model>
   )
 }

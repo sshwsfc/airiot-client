@@ -7,7 +7,7 @@
 ### 1. 用户列表页面
 
 ```typescript
-import { Model, hooks } from '@airiot/client'
+import { Model, useModelList, useModelPermission, useModelPagination, useModelPageSize, useModelSelect, useModelDelete } from '@airiot/client'
 
 const userModel = {
   name: 'user',
@@ -24,12 +24,12 @@ const userModel = {
 }
 
 function UserList() {
-  const { loading, items, selected } = hooks['model.list']()
-  const { canAdd, canEdit, canDelete } = hooks['model.permission']()
-  const { count, activePage, changePage } = hooks['model.pagination']()
-  const { sizes, setPageSize, size } = hooks['model.pagesize']()
-  const { onSelect, onSelectAll } = hooks['model.select']()
-  const { deleteItem } = hooks['model.delete']()
+  const { loading, items, selected } = useModelList()
+  const { canAdd, canEdit, canDelete } = useModelPermission()
+  const { count, activePage, changePage } = useModelPagination()
+  const { sizes, setPageSize, size } = useModelPageSize()
+  const { onSelect, onSelectAll } = useModelSelect()
+  const { deleteItem } = useModelDelete()
 
   if (loading) return <Spinner />
 
@@ -84,7 +84,7 @@ export default function UserManagement() {
 ### 2. 用户表单（新增/编辑）
 
 ```typescript
-import { Model, hooks, useModel } from '@airiot/client'
+import { Model, useModelGet, useModelSave } from '@airiot/client'
 import { SchemaForm } from '@airiot/client'
 
 const userFormSchema = {
@@ -131,8 +131,8 @@ const userFormSchema = {
 }
 
 function UserForm() {
-  const { data, loading } = hooks['model.get']()
-  const { saveItem } = hooks['model.save']()
+  const { data, loading } = useModelGet()
+  const { saveItem } = useModelSave()
   const navigate = useNavigate()
   const location = useLocation()
   const userId = location.pathname.split('/').pop()
@@ -329,7 +329,7 @@ function App() {
 ### 1. 筛选组件
 
 ```typescript
-import { Model, useModel } from '@airiot/client'
+import { Model, useModelList, useModel } from '@airiot/client'
 import { useSetAtom } from 'jotai'
 
 function FilterPanel() {
@@ -371,7 +371,7 @@ function FilterPanel() {
 }
 
 function FilteredList() {
-  const { items, loading } = hooks['model.list']()
+  const { items, loading } = useModelList()
 
   return (
     <div>

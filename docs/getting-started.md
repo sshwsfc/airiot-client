@@ -170,11 +170,11 @@ export const userModel: ModelSchema = {
 
 ```typescript
 // UserList.tsx
-import { Model, hooks } from '@airiot/client'
+import { Model, useModelList } from '@airiot/client'
 import { userModel } from './models/user'
 
 function UserList() {
-  const { loading, items } = hooks['model.list']()
+  const { loading, items } = useModelList()
 
   if (loading) return <div>加载中...</div>
 

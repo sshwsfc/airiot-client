@@ -146,7 +146,7 @@ docs/
 npm run docs:dev
 ```
 
-文档将在 http://localhost:5173 启动。
+文档将在本地启动（默认 http://localhost:5173）。
 
 ### 构建文档
 

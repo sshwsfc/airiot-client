@@ -67,30 +67,30 @@ function MyComponent() {
 }
 ```
 
-### `hooks['model.get']()`
+### `useModelGet()`
 
 获取模型数据。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelGet } from '@airiot/client'
 
 function UserEdit({ userId }) {
-  const { data, loading } = hooks['model.get']({ id: userId })
+  const { data, loading } = useModelGet({ id: userId })
 
   if (loading) return <Spinner />
   return <UserForm initialValues={data} />
 }
 ```
 
-### `hooks['model.save']()`
+### `useModelSave()`
 
 保存模型数据。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelSave } from '@airiot/client'
 
 function UserForm({ initialValues }) {
-  const { saveItem } = hooks['model.save']()
+  const { saveItem } = useModelSave()
 
   const handleSubmit = async (values) => {
     try {
@@ -106,15 +106,15 @@ function UserForm({ initialValues }) {
 }
 ```
 
-### `hooks['model.delete']()`
+### `useModelDelete()`
 
 删除模型数据。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelDelete } from '@airiot/client'
 
 function UserItem({ userId }) {
-  const { deleteItem } = hooks['model.delete']()
+  const { deleteItem } = useModelDelete()
 
   const handleDelete = async () => {
     await deleteItem(userId)
@@ -124,16 +124,16 @@ function UserItem({ userId }) {
 }
 ```
 
-### `hooks['model.getItems']()`
+### `useModelGetItems()`
 
 获取数据列表。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelGetItems, useModelValue } from '@airiot/client'
 
 function UserList() {
   const { model } = useModel()
-  const { getItems } = hooks['model.getItems']()
+  const { getItems } = useModelGetItems()
   const items = useModelValue('items')
   const loading = useModelValue('loading', 'items')
 
@@ -149,15 +149,15 @@ function UserList() {
 }
 ```
 
-### `hooks['model.list']()`
+### `useModelList()`
 
 获取列表数据（带自动刷新）。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelList } from '@airiot/client'
 
 function UserTable() {
-  const { loading, items, fields, selected } = hooks['model.list']()
+  const { loading, items, fields, selected } = useModelList()
 
   return (
     <div>
@@ -167,15 +167,15 @@ function UserTable() {
 }
 ```
 
-### `hooks['model.pagination']()`
+### `useModelPagination()`
 
 分页功能。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelPagination } from '@airiot/client'
 
 function Pagination() {
-  const { items, activePage, changePage } = hooks['model.pagination']()
+  const { items, activePage, changePage } = useModelPagination()
 
   return (
     <PaginationComponent
@@ -187,15 +187,15 @@ function Pagination() {
 }
 ```
 
-### `hooks['model.pagesize']()`
+### `useModelPageSize()`
 
 页面大小控制。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelPageSize } from '@airiot/client'
 
 function PageSizeControl() {
-  const { sizes, setPageSize, size } = hooks['model.pagesize']()
+  const { sizes, setPageSize, size } = useModelPageSize()
 
   return (
     <Select value={size} onChange={setPageSize}>
@@ -205,15 +205,15 @@ function PageSizeControl() {
 }
 ```
 
-### `hooks['model.select']()`
+### `useModelSelect()`
 
 选择功能。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelSelect } from '@airiot/client'
 
 function SelectionTable() {
-  const { count, selected, onSelect, onSelectAll } = hooks['model.select']()
+  const { count, selected, onSelect, onSelectAll } = useModelSelect()
 
   return (
     <Table
@@ -226,30 +226,30 @@ function SelectionTable() {
 }
 ```
 
-### `hooks['model.query']()`
+### `useModelQuery()`
 
 自定义查询。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelQuery } from '@airiot/client'
 
 function CustomQuery() {
-  const { items, loading, model } = hooks['model.query']()
+  const { items, loading, model } = useModelQuery()
 
   if (loading) return <Spinner />
   return <CustomList data={items} />
 }
 ```
 
-### `hooks['model.permission']()`
+### `useModelPermission()`
 
 权限检查。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelPermission } from '@airiot/client'
 
 function UserActions() {
-  const { canAdd, canEdit, canDelete } = hooks['model.permission']()
+  const { canAdd, canEdit, canDelete } = useModelPermission()
 
   return (
     <div>
@@ -261,15 +261,15 @@ function UserActions() {
 }
 ```
 
-### `hooks['model.event']()`
+### `useModelEvent()`
 
 事件处理。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelEvent } from '@airiot/client'
 
 function EventExample() {
-  const { onLoad, onSave, onDelete } = hooks['model.event']()
+  const { onLoad, onSave, onDelete } = useModelEvent()
 
   useEffect(() => {
     if (onLoad) onLoad()
@@ -283,15 +283,15 @@ function EventExample() {
 }
 ```
 
-### `hooks['model.fields']()`
+### `useModelFields()`
 
 字段控制。
 
 ```typescript
-import { hooks } from '@airiot/client'
+import { useModelFields } from '@airiot/client'
 
 function FieldControl() {
-  const { fields, changeFieldDisplay, selected } = hooks['model.fields']()
+  const { fields, changeFieldDisplay, selected } = useModelFields()
 
   return (
     <div>
@@ -401,8 +401,8 @@ function MyComponent() {
 ### 用户管理页面
 
 ```typescript
-import { Model, hooks, useModel } from '@airiot/client'
-import { useAtomValue } from 'jotai'
+import { Model, useModelList, useModelPagination, useModelPermission, useModelDelete } from '@airiot/client'
+import { useAtomValue, useSetAtom } from 'jotai'
 
 const userModel = {
   name: 'user',
@@ -422,10 +422,10 @@ const userModel = {
 }
 
 function UserTable() {
-  const { loading, items } = hooks['model.list']()
-  const { changePage } = hooks['model.pagination']()
-  const { canAdd, canDelete } = hooks['model.permission']()
-  const { deleteItem } = hooks['model.delete']()
+  const { loading, items } = useModelList()
+  const { changePage } = useModelPagination()
+  const { canAdd, canDelete } = useModelPermission()
+  const { deleteItem } = useModelDelete()
 
   if (loading) return <Spinner />
 
@@ -475,13 +475,14 @@ function UserManagement() {
 ### 带筛选的列表
 
 ```typescript
-import { Model, hooks, useModel } from '@airiot/client'
+import { Model, useModelList, useModel } from '@airiot/client'
+import { useSetAtom } from 'jotai'
 
 function FilteredList() {
   const { atoms } = useModel()
   const setWheres = useSetAtom(atoms.wheres)
   const setOption = useSetAtom(atoms.option)
-  const { items, loading } = hooks['model.list']()
+  const { items, loading } = useModelList()
 
   const handleFilter = (filter) => {
     setWheres({ status: { $eq: filter.status } })
@@ -496,3 +497,20 @@ function FilteredList() {
   )
 }
 ```
+
+## 兼容性说明
+
+为了向后兼容，旧的 hooks 对象仍然可用：
+
+```typescript
+import { hooks } from '@airiot/client'
+
+// 旧方式（仍然支持）
+const { loading, items } = hooks['model.list']()
+
+// 新方式（推荐）
+import { useModelList } from '@airiot/client'
+const { loading, items } = useModelList()
+```
+
+所有新的 use 方法都可以从 `@airiot/client` 直接导入使用，更加简洁和类型安全。

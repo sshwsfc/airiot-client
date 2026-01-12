@@ -4,9 +4,11 @@ export default defineConfig({
   title: '@airiot/client',
   description: 'Airiot TypeScript 客户端库文档',
   lang: 'zh-CN',
-  
+
   base: '/@airiot/client/',
-  
+
+  ignoreDeadLinks: 'localhostLinks',
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
@@ -56,21 +58,6 @@ export default defineConfig({
       message: 'MIT Licensed',
       copyright: 'Copyright © 2025 Airiot'
     }
-  },
-
-  markdown: {
-    codeTransformers: [
-      {
-        post: (code) => {
-          if (code.includes('import') && code.includes('from')) {
-            return code.replace(/^import .+ from (.+)/gm, (_, match) => {
-              return `import { ... } ${match}`
-            })
-          }
-          return code
-        }
-      }
-    ]
   },
 
   head: [
