@@ -4,11 +4,11 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   plugins: [
-    visualizer({
-      filename: '.build_stats.html',
-      title: 'Build Analysis',
-      open: true,
-    })
+    // visualizer({
+    //   filename: '.build_stats.html',
+    //   title: 'Build Analysis',
+    //   open: true,
+    // })
   ],
   build: {
     lib: {
@@ -23,13 +23,15 @@ export default defineConfig({
           // 如果有外部依赖，在这里配置全局变量名
           'react': 'React',
           'react-dom': 'ReactDOM',
-          'react-router': 'ReactRouter'
+          'react-router': 'ReactRouter',
+          'react-router-dom': 'ReactRouterDOM',
+          'jotai': 'jotai'
         }
       },
       external: [
         // 在这里添加不希望打包进库的依赖
         // 例如: 'react', 'react-dom'
-        'react', 'react-dom', 'react-router'
+        'react', 'react-dom', 'react-router', 'react-router-dom', 'jotai'
       ]
     },
     sourcemap: true,

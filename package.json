@@ -8,9 +8,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/airiot-client.es.js",
+      "types": "./dist/index.d.ts",
       "require": "./dist/airiot-client.umd.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/airiot-client.es.js"
     }
   },
   "files": [
@@ -48,7 +48,11 @@
     "vitest": "^4.0.16",
     "vitepress": "^1.0.0"
   },
-  "dependencies": {
-    "react-router": "^7.12.0"
+  "peerDependencies": {
+    "react-router": "^7.12.0",
+    "react-router-dom": "^7.12.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "jotai": "^2.7.0"
   }
 }
