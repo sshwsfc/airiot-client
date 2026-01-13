@@ -94,3 +94,138 @@ These are NOT bundled in the library:
 - `react-router`
 
 Use them via peer dependencies in consuming applications.
+
+## Model Registry
+
+### Built-in Models
+
+The library includes a collection of built-in Airiot system models defined in `src/model/models.json`. These models are automatically registered in the `modelRegistry` and can be used by specifying the `name` prop on the `Model` component.
+
+### Available Built-in Models
+
+- **Table** - Data table management (`core/t/schema`)
+- **Device** - Single device (`core/t/schema`)
+- **systemvariable** - Data dictionary (`core/systemVariable`)
+- **DriverInstance** - Driver management (`driver/driverInstance`)
+- **ProtocolProxy** - Proxy management (`driver/protocolProxy`)
+- **Instruct** - Command status management (`driver/instruct`)
+- **DeviceArchive** - Archive information (`driver/archivedlog`)
+- **NetworkGraph** - Network communication exception statistics (`core/t/record`)
+- **TaskManager** - Background task management (`core/taskmanager`)
+- **DeviceEvent** - Driver event information (`driver/event`)
+- **ArchiveEvent** - Driver event archive information (`driver/archiveEvent`)
+- **System** - System settings (`setting`)
+- **backup** - Backup and restore (`core/backup`)
+- **dbBackup** - Database backup (`db-backup`)
+- **dbBackupFTP** - Database backup FTP
+- **tsdbBackup** - Historical data backup (`tsdb-backup`)
+- **tsdbBackupFTP** - Historical data backup FTP
+- **backupcycle** - Cycle backup (`core/backupCycle`)
+- **Flow** - Workflow (`flow/flow`)
+- **FlowTask** - My tasks (`flow/flowTask/currentUser`)
+- **AllFlowTask** - Task management (`flow/flowTask`)
+- **FlowJob** - My initiated workflows (`engine/job`)
+- **JobInstance** - Workflow instance (`engine/jobInstance`)
+- **ArchivedInstance** - Workflow instance archive (`engine/archivedInstance`)
+- **Theme** - System theme (`core/theme`)
+- **Log** - Operation log (`core/log`)
+- **Archivedlog** - Log archive (`core/archivedlog`)
+- **Apipermission** - Unauthorized access log (`core/apipermission`)
+- **SystemLog** - System log (`syslog/log`)
+- **Dashboard** - View/Dashboard (`core/dashboard`)
+- **Site** - Frontend/Site (`core/site`)
+- **Warning** - Warning management
+- **Rule** - Rule management
+- **WarningArchive** - Warning archive
+- **tRecord** - Time series record
+- **Report** - Report management
+- **reportcopy** - Report copy
+- **algorithm** - Algorithm management
+- **OauthApp** - OAuth application
+- **app** - Application management
+- **Role** - Role management
+- **User** - User management
+- **Licenseinfo** - License information
+- **SafeZone** - Safe zone management
+- **ExamineUser** - User approval
+- **ExamineRole** - Role approval
+- **Datasource** - Datasource management
+- **Operation** - Operation management
+- **Service** - Service management
+- **Dataset** - Dataset management
+- **DataView** - Data view management
+- **sync** - Data synchronization
+- **Media** - Media management
+- **Message** - Message management
+- **Plan** - Plan management
+- **Review** - Review management
+- **Playback** - Playback management
+- **warningPlayback** - Warning playback
+- **warningCapture** - Warning capture
+
+### Using Built-in Models
+
+To use a built-in model, simply specify the model name as the `name` prop:
+
+```tsx
+import { Model } from '@airiot/client'
+
+function DeviceList() {
+  return (
+    <Model name="Device">
+      {/* Child components can access the model via context */}
+    </Model>
+  )
+}
+```
+
+The `Model` component will automatically look up the model definition from `modelRegistry` using the `name` prop.
+
+### Model Registry API
+
+The `modelRegistry` object provides the following methods:
+
+- `getModels()` - Get all registered models
+- `getModel(name)` - Get a specific model by name
+- `registerModel(name, model)` - Register a new model
+- `getModelAtoms()` - Get model atoms generators
+- `addModelAtoms(getAtoms)` - Add a model atoms generator
+
+### Custom Models
+
+You can also register custom models dynamically:
+
+```tsx
+import { modelRegistry } from '@airiot/client/model'
+
+modelRegistry.registerModel('MyCustomModel', {
+  name: 'myCustomModel',
+  resource: 'api/custom',
+  title: 'My Custom Model',
+  properties: {
+    id: { type: 'string', title: 'ID' },
+    name: { type: 'string', title: 'Name' }
+  },
+  listFields: ['id', 'name'],
+  permission: { view: true, add: true, edit: true, delete: true }
+})
+```
+
+### Model Schema Structure
+
+Each model schema includes:
+
+- `name` - Internal model name
+- `resource` - API resource path
+- `title` - Display title
+- `icon` - Icon identifier or React element
+- `properties` - Field definitions (JSON Schema format)
+- `listFields` - Fields to display in list view
+- `form` - Form field configuration
+- `permission` - CRUD permissions
+- `rolePermission` - Role-based permissions
+- `orders` - Default sort order
+- `filters` - Filter configurations
+- `components` - Custom components
+- `events` - Event handlers
+- `initialValues` - Initial query values

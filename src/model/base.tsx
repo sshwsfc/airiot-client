@@ -4,6 +4,9 @@ import isFunction from 'lodash/isFunction'
 import modelAtoms, { ModelAtoms } from './atoms'
 import { createAPI, type APIOptions, type API } from '../api'
 import { useAtomCallback } from 'jotai/utils'
+import models from './models.json'
+
+const modelsMap: Record<string, ModelSchema> = models as unknown as Record<string, ModelSchema>
 
 interface QueryObject {
   [key: string]: any
@@ -49,7 +52,7 @@ const modelAtomsMap: Record<string, ModelAtoms> = {}
 
 // Registry for models and extensions
 const modelRegistry = {
-  models: {} as Record<string, ModelSchema>,
+  models: modelsMap as Record<string, ModelSchema>,
   modelAtoms: [] as Array<(k: (id: string) => string, model: ModelSchema) => ModelAtoms>,
   getModels: () => modelRegistry.models,
   getModel: (name: string) => modelRegistry.models[name],
@@ -63,7 +66,7 @@ const modelRegistry = {
 }
 
 const getModel = (name: string, key: string | undefined, props: any): ModelSchema => {
-  const model = modelRegistry.getModels()[name]
+  const model = modelRegistry.getModel(name)
   if(!model) {
     throw Error(`Model '${name}' not found!`)
   }

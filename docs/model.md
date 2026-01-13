@@ -2,6 +2,181 @@
 
 模型模块提供完整的数据模型管理和状态管理功能，基于 Jotai 实现响应式状态。
 
+## Model Registry
+
+模型注册中心（Model Registry）提供系统内置的 Airiot 模型，并支持动态注册自定义模型。
+
+### 内置模型
+
+库内置了 46 个 Airiot 系统模型，定义在 `src/model/models.json` 中，自动注册到 `modelRegistry`。
+
+| 模型名称 | 中文名称 | API 资源路径 |
+|---------|---------|-------------|
+| Table | 数据表 | `core/t/schema` |
+| Device | 单设备 | `core/t/schema` |
+| systemvariable | 数据字典 | `core/systemVariable` |
+| DriverInstance | 驱动管理 | `driver/driverInstance` |
+| ProtocolProxy | 代理管理 | `driver/protocolProxy` |
+| Instruct | 指令状态管理 | `driver/instruct` |
+| DeviceArchive | 归档信息 | `driver/archivedlog` |
+| NetworkGraph | 网络通信异常统计 | `core/t/record` |
+| TaskManager | 后台任务管理 | `core/taskmanager` |
+| DeviceEvent | 驱动事件信息 | `driver/event` |
+| ArchiveEvent | 驱动事件归档信息 | `driver/archiveEvent` |
+| System | 系统设置 | `setting` |
+| backup | 备份与还原 | `core/backup` |
+| dbBackup | 数据库备份 | `db-backup` |
+| dbBackupFTP | 数据库备份 FTP | - |
+| tsdbBackup | 历史数据备份 | `tsdb-backup` |
+| tsdbBackupFTP | 历史数据备份 FTP | - |
+| backupcycle | 周期备份 | `core/backupCycle` |
+| Flow | 流程 | `flow/flow` |
+| FlowTask | 我的任务 | `flow/flowTask/currentUser` |
+| AllFlowTask | 任务管理 | `flow/flowTask` |
+| FlowJob | 我发起的流程 | `engine/job` |
+| JobInstance | 流程实例 | `engine/jobInstance` |
+| ArchivedInstance | 流程实例归档 | `engine/archivedInstance` |
+| Theme | 系统主题 | `core/theme` |
+| Log | 操作日志 | `core/log` |
+| Archivedlog | 日志归档信息 | `core/archivedlog` |
+| Apipermission | 越权访问日志 | `core/apipermission` |
+| SystemLog | 系统日志 | `syslog/log` |
+| Dashboard | 画面 | `core/dashboard` |
+| Site | 前台 | `core/site` |
+| Warning | 告警管理 | - |
+| Rule | 规则管理 | - |
+| WarningArchive | 告警归档 | - |
+| tRecord | 时序记录 | - |
+| Report | 报表管理 | - |
+| reportcopy | 报表复制 | - |
+| algorithm | 算法管理 | - |
+| OauthApp | OAuth 应用 | - |
+| app | 应用管理 | - |
+| Role | 角色管理 | - |
+| User | 用户管理 | - |
+| Licenseinfo | 许可证信息 | - |
+| SafeZone | 安全区管理 | - |
+| ExamineUser | 用户审批 | - |
+| ExamineRole | 角色审批 | - |
+| Datasource | 数据源管理 | - |
+| Operation | 运算管理 | - |
+| Service | 服务管理 | - |
+| Dataset | 数据集管理 | - |
+| DataView | 数据视图管理 | - |
+| sync | 数据同步 | - |
+| Media | 媒体管理 | - |
+| Message | 消息管理 | - |
+| Plan | 计划管理 | - |
+| Review | 审查管理 | - |
+| Playback | 回放管理 | - |
+| warningPlayback | 告警回放 | - |
+| warningCapture | 告警抓拍 | - |
+
+### 使用内置模型
+
+通过指定 `name` 属性使用内置模型：
+
+```tsx
+import { Model } from '@airiot/client'
+
+function DeviceList() {
+  return (
+    <Model name="Device">
+      <DeviceTable />
+    </Model>
+  )
+}
+
+function DeviceTable() {
+  const { model } = useModel()
+  const { items } = useModelList()
+  
+  return (
+    <div>
+      <h1>{model.title}</h1>
+      <Table data={items} />
+    </div>
+  )
+}
+```
+
+`Model` 组件会自动从 `modelRegistry` 中查找名为 `Device` 的模型定义。
+
+### 注册自定义模型
+
+可以动态注册自定义模型：
+
+```tsx
+import { modelRegistry } from '@airiot/client/model'
+
+modelRegistry.registerModel('MyCustomModel', {
+  name: 'myCustomModel',
+  resource: 'api/custom',
+  title: '我的自定义模型',
+  properties: {
+    id: { type: 'string', title: 'ID' },
+    name: { type: 'string', title: '名称' },
+    status: { type: 'string', title: '状态' }
+  },
+  listFields: ['id', 'name', 'status'],
+  permission: { view: true, add: true, edit: true, delete: true },
+  orders: { createTime: 'DESC' }
+})
+
+// 使用自定义模型
+function CustomList() {
+  return (
+    <Model name="MyCustomModel">
+      <CustomTable />
+    </Model>
+  )
+}
+```
+
+### Model Registry API
+
+`modelRegistry` 对象提供以下方法：
+
+| 方法 | 说明 |
+|-----|------|
+| `getModels()` | 获取所有已注册的模型 |
+| `getModel(name)` | 根据名称获取特定模型 |
+| `registerModel(name, model)` | 注册新模型 |
+| `getModelAtoms()` | 获取模型原子生成器 |
+| `addModelAtoms(getAtoms)` | 添加模型原子生成器 |
+
+### 模型配置结构
+
+每个模型配置包含：
+
+```typescript
+interface ModelSchema {
+  name: string                              // 模型名称
+  resource: string                           // API 资源路径
+  title: string                             // 显示标题
+  icon?: string | ReactElement               // 图标标识或 React 元素
+  properties?: Record<string, Property>       // 字段定义（JSON Schema 格式）
+  listFields?: string[]                     // 列表显示字段
+  form?: any[]                             // 表单字段配置
+  permission?: {                            // CRUD 权限
+    view?: boolean
+    add?: boolean
+    edit?: boolean
+    delete?: boolean
+  }
+  rolePermission?: Array<{key: string, title: string}> // 角色权限
+  orders?: Record<string, string>           // 默认排序
+  filters?: any                            // 筛选配置
+  components?: Record<string, any>           // 自定义组件
+  events?: Record<string, Function>          // 事件处理器
+  initialValues?: any | (() => any)        // 初始查询值
+  defaultPageSize?: number                  // 默认每页数量
+  partialSave?: boolean                     // 是否允许部分保存
+  forceGetItem?: boolean                   // 是否强制获取单项
+  [key: string]: any                       // 其他自定义配置
+}
+```
+
 ## 组件
 
 ### `Model`
