@@ -1,17 +1,17 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { LayoutDashboard, Database, Shield, FileText, FolderTree, Activity, Settings, Server } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
+import ApiDemoPage from './pages/ApiDemoPage'
+import AuthDemoPage from './pages/AuthDemoPage'
+import FormDemoPage from './pages/FormDemoPage'
+import ModelDemoPage from './pages/ModelDemoPage'
+import BuiltinModelsPage from './pages/BuiltinModelsPage'
+import ConfigDemoPage from './pages/ConfigDemoPage'
+
 function App() {
-  const location = useLocation()
-
-  const isActive = (path: string) => {
-    return location.pathname === path
-  }
-
   const navigationItems = [
     { path: '/', label: '首页', icon: LayoutDashboard },
     { path: '/api', label: 'API 模块', icon: Database },
@@ -23,6 +23,7 @@ function App() {
   ]
 
   return (
+    <BrowserRouter>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
@@ -117,6 +118,7 @@ function App() {
         </div>
       </div>
     </div>
+    </BrowserRouter>
   )
 }
 

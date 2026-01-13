@@ -11,4 +11,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    port: 3000,
+    proxy: {
+      '/rest': {
+        target: 'http://v4.airiot.tech:3030/',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })

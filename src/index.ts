@@ -1,4 +1,4 @@
-import createAPI, { setContext, getContext } from './api'
+import createAPI from './api'
 
 export {
   Model,
@@ -47,9 +47,7 @@ export { getConfig, setConfig
 export const api = createAPI
 
 export {
-  createAPI,
-  setContext,
-  getContext
+  createAPI
 }
 
 export type {

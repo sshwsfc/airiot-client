@@ -1,11 +1,14 @@
 import { useState } from 'react'
+import { useUser, useLogin, useLogout } from '@airiot/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function AuthDemoPage() {
-  const [user, setUser] = useState<any>(null)
+  const { user, setUser } = useUser()
+  const { showCode, onLogin } = useLogin()
+  const { onLogout } = useLogout()
   const [loginForm, setLoginForm] = useState({
     username: '',
     password: '',
@@ -13,20 +16,25 @@ export default function AuthDemoPage() {
     remember: false
   })
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setUser({
-      id: 'demo-user',
-      username: loginForm.username,
-      token: 'demo-token',
-      permissions: ['view', 'edit']
-    })
-    setLoginForm({ username: '', password: '', verifyCode: '', remember: false })
-    alert('登录成功！')
+    try {
+      await onLogin({
+        username: loginForm.username,
+        password: loginForm.password,
+        verifyCode: loginForm.verifyCode,
+        remenber: loginForm.remember
+      })
+      setLoginForm({ username: '', password: '', verifyCode: '', remember: false })
+      alert('登录成功！')
+    } catch (err: any) {
+      console.error('登录失败:', err)
+      alert(`登录失败: ${err.message || err.json?._error || '未知错误'}`)
+    }
   }
 
-  const handleLogout = () => {
-    setUser(null)
+  const handleLogoutClick = () => {
+    onLogout()
     alert('已登出')
   }
 
@@ -47,7 +55,7 @@ export default function AuthDemoPage() {
                 <p><strong>用户名:</strong> {user.username}</p>
                 <p><strong>Token:</strong> {user.token}</p>
                 <p><strong>权限:</strong> {user.permissions?.join(', ') || '无'}</p>
-                <Button variant="destructive" onClick={handleLogout}>
+                <Button variant="destructive" onClick={handleLogoutClick}>
                   登出
                 </Button>
               </div>
@@ -81,14 +89,16 @@ export default function AuthDemoPage() {
                   required
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium mb-2">验证码</label>
-                <Input
-                  placeholder="请输入验证码"
-                  value={loginForm.verifyCode}
-                  onChange={(e) => setLoginForm({ ...loginForm, verifyCode: e.target.value })}
-                />
-              </div>
+              {showCode && (
+                <div>
+                  <label className="text-sm font-medium mb-2">验证码</label>
+                  <Input
+                    placeholder="请输入验证码"
+                    value={loginForm.verifyCode}
+                    onChange={(e) => setLoginForm({ ...loginForm, verifyCode: e.target.value })}
+                  />
+                </div>
+              )}
               <div className="flex items-center space-x-2">
                 <label className="flex items-center space-x-2 text-sm">
                   <input
@@ -111,9 +121,11 @@ export default function AuthDemoPage() {
               <br />
               <strong>useUser()</strong> - 获取和设置用户信息
               <br />
-              <strong>useLogin()</strong> - 提供登录功能
+              <strong>useLogin()</strong> - 提供登录功能，返回 showCode 判断是否需要验证码
               <br />
-              <strong>useLogout()</strong> - 提供登出功能
+              <strong>useLogout()</strong> - 提供登出功能，清除用户信息
+              <br />
+              所有请求会通过 Vite proxy 转发到 http://localhost:8080
             </AlertDescription>
           </Alert>
         </div>

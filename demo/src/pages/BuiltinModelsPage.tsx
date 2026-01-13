@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Model } from '@airiot/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -32,6 +33,14 @@ const builtinModels = [
 
 export default function BuiltinModelsPage() {
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
+  const [loadingItems, setLoadingItems] = useState<string[]>([])
+
+  const handleModelSelect = (modelName: string) => {
+    setLoadingItems([...loadingItems, modelName])
+    setTimeout(() => {
+      setLoadingItems(loadingItems.filter(m => m !== modelName))
+    }, 1000)
+  }
 
   return (
     <Card>
@@ -73,7 +82,7 @@ export default function BuiltinModelsPage() {
                 <TableCell>{model.description}</TableCell>
                 <TableCell>
                   <Button variant="outline" size="sm" onClick={() => setSelectedModel(model.name)}>
-                    查看详情
+                    {loadingItems.includes(model.name) ? '加载中...' : '查看详情'}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -108,11 +117,14 @@ export default function BuiltinModelsPage() {
                 <p><strong>中文名称：</strong> {builtinModels.find(m => m.name === selectedModel)?.title}</p>
                 <p><strong>API 资源：</strong> {builtinModels.find(m => m.name === selectedModel)?.resource}</p>
                 <p><strong>描述：</strong> {builtinModels.find(m => m.name === selectedModel)?.description}</p>
-                <pre className="mt-4 p-4 rounded-lg bg-muted text-sm overflow-auto" style={{ maxHeight: '200px' }}>
+                <div className="p-4 rounded-lg border bg-muted">
+                  <p className="text-sm mb-2"><strong>使用示例：</strong></p>
+                  <pre className="p-4 rounded bg-background text-sm overflow-auto" style={{ maxHeight: '200px' }}>
 {`<Model name="${selectedModel}">
   {/* 你的组件 */}
 </Model>`}
-                </pre>
+                  </pre>
+                </div>
               </div>
               <div className="flex justify-end">
                 <Button
@@ -135,6 +147,8 @@ export default function BuiltinModelsPage() {
             涵盖：数据管理、驱动管理、流程管理、备份管理、日志管理、权限管理等多个模块。
             <br />
             使用内置模型可以快速开发 Airiot 平台应用，无需重复定义模型配置。
+            <br />
+            所有请求会通过 Vite proxy 转发到 http://localhost:8080
           </AlertDescription>
         </Alert>
       </CardContent>

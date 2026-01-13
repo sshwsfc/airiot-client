@@ -3,30 +3,18 @@ import isEmpty from 'lodash/isEmpty'
 import omit from 'lodash/omit'
 import dayjs from 'dayjs'
 import sha1 from 'crypto-js/sha1'
-import localforage from 'localforage'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useMessage } from '../hooks'
-import { getConfig } from '../config'
+import { getConfig, setConfig } from '../config'
 import api from '../api'
 
 export const useUser = () => {
   const storageKey = 'user'
-  const [user, setUser] = React.useState<any>(null)
-
-  React.useEffect(() => {
-    const loadUser = async () => {
-      let storedUser = await localforage.getItem(storageKey)
-      if (storedUser) {
-        setUser(storedUser)
-      }
-    }
-    loadUser()
-  }, [storageKey])
-
-  return { user, setUser, storageKey }
+  const setUser = (user: any) => setConfig({ user })
+  return { user: getConfig().user, setUser, storageKey }
 }
 
-const uploadUser = (storage: Storage, json: any, storageKey: string, setUser: React.Dispatch<React.SetStateAction<any>>) => {
+const uploadUser = (storage: Storage, json: any, storageKey: string, setUser: (user: any) => void) => {
   const host = window.location.host
   setUser(json)
   // update_models(json)

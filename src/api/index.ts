@@ -27,7 +27,6 @@ interface AppContext {
     safeRequest?: boolean
     [key: string]: any
   }
-  module?: string
   [key: string]: any
 }
 
@@ -113,19 +112,6 @@ interface APIInstance extends API {
   convert_data: (data: any) => any
 }
 
-// 全局上下文（可以通过 setter 更新）
-let globalContext: AppContext = {}
-
-// 设置上下文的方法
-export function setContext(context: AppContext) {
-  globalContext = { ...globalContext, ...context }
-}
-
-// 获取上下文的方法
-export function getContext(): AppContext {
-  return globalContext
-}
-
 function mergeQueries(...queries: Record<string, any>[]): Record<string, any> {
   const merged: Record<string, any> = {}
   const fieldConditions: Record<string, any[]> = {}
@@ -204,10 +190,10 @@ function getHeaders(options: FetchOptions, context: AppContext, resource: string
   const projectId = typeof location !== 'undefined' ? location.pathname.split('/').find(p => p.startsWith('_p_')) : null
   if (projectId) {
     hs['x-request-project'] = projectId.substring(3)
-  }
-
-  if (context?.module !== 'front') {
-    hs['X-Access-Path'] = 'admin'
+  } else {
+    if(getConfig().projectId){
+      hs['x-request-project'] = getConfig().projectId
+    }
   }
 
   if (lang) {
@@ -223,7 +209,7 @@ function getHeaders(options: FetchOptions, context: AppContext, resource: string
 
 // 工厂函数创建 API 实例
 export function createAPI(options: APIOptions, context?: AppContext): APIInstance {
-  const ctx = context || globalContext
+  const ctx = context || getConfig()
   const model = options
   const host = getHost(options)
   let resource = options.resource || options.name

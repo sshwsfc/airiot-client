@@ -1,34 +1,35 @@
 import { useState } from 'react'
+import { getConfig, setConfig, getSettings } from '@airiot/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function ConfigDemoPage() {
-  const [config, setConfig] = useState({
-    language: 'zh-CN',
-    module: 'admin'
-  })
+  const config = getConfig()
   const [settings, setSettings] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
   const handleUpdateConfig = () => {
+    setConfig({
+      language: 'zh-CN',
+      module: 'admin'
+    })
     alert('配置已更新')
   }
 
-  const handleLoadSettings = () => {
+  const handleLoadSettings = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setSettings({
-        appName: '@airiot/client Demo',
-        version: '1.0.0',
-        description: '演示应用',
-        features: ['API 模块', '认证模块', '表单模块', '模型模块', '内置模型'],
-        author: 'Airiot Team'
-      })
-      setLoading(false)
+    try {
+      const serverSettings = await getSettings()
+      setSettings(serverSettings)
       alert('设置加载成功')
-    }, 1000)
+    } catch (err: any) {
+      console.error('加载设置失败:', err)
+      alert(`加载失败: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleShowMessage = (type: string) => {
@@ -51,6 +52,8 @@ export default function ConfigDemoPage() {
             <div className="space-y-2">
               <p><strong>语言 (language):</strong> {config.language || '未设置'}</p>
               <p><strong>模块 (module):</strong> {config.module || '未设置'}</p>
+              <p><strong>用户 (user):</strong> {config.user ? JSON.stringify(config.user) : '未设置'}</p>
+              <p><strong>设置 (settings):</strong> {config.settings ? JSON.stringify(config.settings) : '未设置'}</p>
             </div>
           </div>
 
@@ -80,7 +83,7 @@ export default function ConfigDemoPage() {
 
           {/* 加载服务器设置 */}
           <div className="p-4 rounded-lg border">
-            <h3 className="text-lg font-semibold mb-3">服务器设置</h3>
+            <h3 className="text-lg font-semibold mb-3">加载服务器设置</h3>
             <Button
               onClick={handleLoadSettings}
               disabled={loading}
@@ -126,6 +129,8 @@ export default function ConfigDemoPage() {
               <strong>getSettings()</strong> - 异步获取服务器端设置（从 core/setting API）
               <br />
               <strong>useMessage()</strong> - 消息提示 Hook（需自行实现 UI）
+              <br />
+              所有请求会通过 Vite proxy 转发到 http://localhost:8080
             </AlertDescription>
           </Alert>
         </div>
