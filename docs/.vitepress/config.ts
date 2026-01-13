@@ -10,6 +10,7 @@ export default defineConfig({
   ignoreDeadLinks: 'localhostLinks',
 
   themeConfig: {
+    logo: undefined,
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/getting-started' },

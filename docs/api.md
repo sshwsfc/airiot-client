@@ -9,14 +9,23 @@ API 模块提供了一套简化的 HTTP 客户端，用于与后端 REST API 进
 创建一个新的 API 实例。
 
 ```typescript
-import { createAPI, setContext } from '@airiot/client'
+import { createAPI, useSetConfig } from '@airiot/client'
+import { useEffect } from 'react'
 
-// 配置全局上下文
-setContext({
-  user: { token: 'your-token' },
-  language: 'zh-CN',
-  module: 'admin'
-})
+function App() {
+  const setConfig = useSetConfig()
+
+  useEffect(() => {
+    // 配置全局上下文
+    setConfig({
+      user: { token: 'your-token' },
+      language: 'zh-CN',
+      module: 'admin'
+    })
+  }, [])
+
+  return <div>{/* 应用内容 */}</div>
+}
 
 // 创建 API 实例
 const api = createAPI({
@@ -207,33 +216,62 @@ const result7 = await api.query({}, {
 })
 ```
 
-## 全局上下文
+## 全局配置
 
-### `setContext(context: AppContext)`
+### `useSetConfig()`
 
-设置全局上下文。
+设置全局配置。
 
 ```typescript
-import { setContext } from '@airiot/client'
+import { useSetConfig } from '@airiot/client'
+import { useEffect } from 'react'
 
-setContext({
-  user: { token: 'your-token', id: 'user123' },
-  language: 'zh-CN',
-  module: 'admin',
-  settings: {
-    safeRequest: true
-  }
-})
+function App() {
+  const setConfig = useSetConfig()
+
+  useEffect(() => {
+    setConfig({
+      user: { token: 'your-token', id: 'user123' },
+      language: 'zh-CN',
+      module: 'admin',
+      settings: {
+        safeRequest: true
+      }
+    })
+  }, [])
+
+  return <div>{/* 应用内容 */}</div>
+}
 ```
 
-### `getContext(): AppContext`
+### `useConfig()`
 
-获取当前全局上下文。
+获取当前全局配置。
 
 ```typescript
-import { getContext } from '@airiot/client'
+import { useConfig } from '@airiot/client'
 
-const context = getContext()
-console.log(context.user)
-console.log(context.language)
+function ConfigComponent() {
+  const [config] = useConfig()
+
+  const updateConfig = (newConfig) => {
+    setConfig({ ...config, ...newConfig })
+  }
+
+  return <div>{JSON.stringify(config)}</div>
+}
+```
+
+### `useConfigValue()`
+
+只读访问全局配置。
+
+```typescript
+import { useConfigValue } from '@airiot/client'
+
+function ConfigDisplay() {
+  const config = useConfigValue()
+
+  return <div>{config.language}</div>
+}
 ```

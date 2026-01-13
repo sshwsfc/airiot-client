@@ -498,19 +498,3 @@ function FilteredList() {
 }
 ```
 
-## 兼容性说明
-
-为了向后兼容，旧的 hooks 对象仍然可用：
-
-```typescript
-import { hooks } from '@airiot/client'
-
-// 旧方式（仍然支持）
-const { loading, items } = hooks['model.list']()
-
-// 新方式（推荐）
-import { useModelList } from '@airiot/client'
-const { loading, items } = useModelList()
-```
-
-所有新的 use 方法都可以从 `@airiot/client` 直接导入使用，更加简洁和类型安全。
