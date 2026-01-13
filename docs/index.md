@@ -41,22 +41,13 @@ npm install @airiot/client
 ## 快速开始
 
 ```typescript
-import { createAPI, useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { createAPI, setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 配置全局配置
-    setConfig({
-      language: 'zh-CN',
-      module: 'admin'
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+// 配置全局上下文
+setConfig({
+  language: 'zh-CN',
+  module: 'admin'
+})
 
 // 创建 API 实例
 const api = createAPI({

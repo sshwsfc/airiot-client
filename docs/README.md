@@ -25,21 +25,13 @@ pnpm add @airiot/client
 ### 基础配置
 
 ```typescript
-import { useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    setConfig({
-      language: 'zh-CN',
-      module: 'admin'
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+// 配置全局上下文
+setConfig({
+  language: 'zh-CN',
+  module: 'admin'
+})
 ```
 
 ### API 使用示例

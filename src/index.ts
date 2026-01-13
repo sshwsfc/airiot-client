@@ -38,9 +38,11 @@ export {
   useLogin, useLogout, useUser, useUserReg
 } from './auth'
 
-export {  useConfig, useSetConfig, useConfigValue,
-  useSettings, useMessage
+export {  getSettings, useMessage
 } from './hooks'
+
+export { getConfig, setConfig
+} from './config'
 
 export const api = createApi
 

@@ -9,23 +9,14 @@ API 模块提供了一套简化的 HTTP 客户端，用于与后端 REST API 进
 创建一个新的 API 实例。
 
 ```typescript
-import { createAPI, useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { createAPI, setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 配置全局上下文
-    setConfig({
-      user: { token: 'your-token' },
-      language: 'zh-CN',
-      module: 'admin'
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+// 配置全局上下文
+setConfig({
+  user: { token: 'your-token' },
+  language: 'zh-CN',
+  module: 'admin'
+})
 
 // 创建 API 实例
 const api = createAPI({
@@ -218,60 +209,31 @@ const result7 = await api.query({}, {
 
 ## 全局配置
 
-### `useSetConfig()`
+### `setConfig(config: any)`
 
 设置全局配置。
 
 ```typescript
-import { useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    setConfig({
-      user: { token: 'your-token', id: 'user123' },
-      language: 'zh-CN',
-      module: 'admin',
-      settings: {
-        safeRequest: true
-      }
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+setConfig({
+  user: { token: 'your-token', id: 'user123' },
+  language: 'zh-CN',
+  module: 'admin',
+  settings: {
+    safeRequest: true
+  }
+})
 ```
 
-### `useConfig()`
+### `getConfig(): any`
 
 获取当前全局配置。
 
 ```typescript
-import { useConfig } from '@airiot/client'
+import { getConfig } from '@airiot/client'
 
-function ConfigComponent() {
-  const [config] = useConfig()
-
-  const updateConfig = (newConfig) => {
-    setConfig({ ...config, ...newConfig })
-  }
-
-  return <div>{JSON.stringify(config)}</div>
-}
-```
-
-### `useConfigValue()`
-
-只读访问全局配置。
-
-```typescript
-import { useConfigValue } from '@airiot/client'
-
-function ConfigDisplay() {
-  const config = useConfigValue()
-
-  return <div>{config.language}</div>
-}
+const config = getConfig()
+console.log(config.user)
+console.log(config.language)
 ```

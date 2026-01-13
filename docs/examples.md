@@ -429,22 +429,13 @@ function AdvancedFilter() {
 ### 1. 自定义 API 调用
 
 ```typescript
-import { createAPI, useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { createAPI, setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 配置全局上下文
-    setConfig({
-      user: { token: localStorage.getItem('token') },
-      language: 'zh-CN'
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+// 配置全局上下文
+setConfig({
+  user: { token: localStorage.getItem('token') },
+  language: 'zh-CN'
+})
 
 // 创建自定义 API
 const customAPI = createAPI({

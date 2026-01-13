@@ -1,21 +1,6 @@
-import { atom, useAtom, useSetAtom, useAtomValue } from 'jotai'
 import api from './api'
 
-const configAtom = atom<any>({})
-
-export const useConfig = () => {
-  return useAtom(configAtom)
-}
-
-export const useSetConfig = () => {
-  return useSetAtom(configAtom)
-}
-
-export const useConfigValue = () => {
-  return useAtomValue(configAtom)
-}
-
-export const useSettings = async () => {
+export const getSettings = async () => {
   return await api({ name: 'core/setting' })
         .fetch('', {}).then(res => res?.json || {})
 }

@@ -1,68 +1,67 @@
-# 全局钩子
+# 全局配置和工具
 
-全局钩子提供应用级别的配置、消息等功能。
+全局配置提供应用级别的设置和工具函数。
 
-## Hooks
+## 配置方法
 
-### `useConfig()`
+### `setConfig(config: any)`
 
-获取和设置全局配置。
+设置全局配置。
 
 ```typescript
-import { useConfig } from '@airiot/client'
+import { setConfig } from '@airiot/client'
 
-function ConfigComponent() {
-  const [config, setConfig] = useConfig()
-
-  const updateConfig = (newConfig) => {
-    setConfig({ ...config, ...newConfig })
+setConfig({
+  user: { token: 'your-token', id: 'user123' },
+  language: 'zh-CN',
+  module: 'admin',
+  settings: {
+    safeRequest: true
   }
-
-  return <div>{JSON.stringify(config)}</div>
-}
+})
 ```
 
-### `useConfigValue()`
+### `getConfig(): any`
 
-只读访问全局配置。
+获取当前全局配置。
 
 ```typescript
-import { useConfigValue } from '@airiot/client'
+import { getConfig } from '@airiot/client'
 
-function ConfigDisplay() {
-  const config = useConfigValue()
-
-  return <div>{config.language}</div>
-}
+const config = getConfig()
+console.log(config.user)
+console.log(config.language)
 ```
 
-### `useSetConfig()`
+## 配置结构
 
-只设置全局配置。
+### 全局配置
 
 ```typescript
-import { useSetConfig } from '@airiot/client'
-
-function ConfigUpdater() {
-  const setConfig = useSetConfig()
-
-  const updateLanguage = (lang) => {
-    setConfig({ language: lang })
+interface Config {
+  language?: string           // 语言设置
+  module?: string             // 当前模块
+  theme?: string              // 主题
+  user?: User                 // 用户信息
+  settings?: {                // 设置
+    safeRequest?: boolean
+    [key: string]: any
   }
-
-  return <button onClick={() => updateLanguage('en')}>English</button>
+  [key: string]: any          // 其他自定义配置
 }
 ```
 
-### `useSettings()`
+## 工具函数
+
+### `getSettings()`
 
 获取服务器端设置（异步）。
 
 ```typescript
-import { useSettings } from '@airiot/client'
+import { getSettings } from '@airiot/client'
 
 async function loadSettings() {
-  const settings = await useSettings()
+  const settings = await getSettings()
   console.log('Settings:', settings)
 }
 ```
@@ -93,96 +92,47 @@ function MyComponent() {
 
 **注意：** 默认实现是空函数，需要在应用中自行集成消息提示组件。
 
-## 配置结构
-
-### 全局配置
-
-```typescript
-interface Config {
-  language?: string           // 语言设置
-  module?: string             // 当前模块
-  theme?: string              // 主题
-  [key: string]: any          // 其他自定义配置
-}
-```
-
 ## 使用示例
 
 ### 应用初始化
 
 ```typescript
-import { useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 加载初始配置
-    const loadConfig = async () => {
-      const settings = await fetchSettings()
-      setConfig({
-        language: settings.language || 'zh-CN',
-        module: 'admin',
-        theme: 'light'
-      })
-    }
-
-    loadConfig()
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
+// 在应用入口文件中初始化配置
+setConfig({
+  language: 'zh-CN',
+  module: 'admin',
+  theme: 'light'
+})
 ```
 
-### 语言切换
+### 更新配置
 
 ```typescript
-import { useConfigValue, useSetConfig } from '@airiot/client'
+import { getConfig, setConfig } from '@airiot/client'
 
-function LanguageSwitcher() {
-  const config = useConfigValue()
-  const setConfig = useSetConfig()
-
-  const changeLanguage = (lang) => {
-    setConfig({ language: lang })
-    // 可能需要重新加载某些组件或页面
-  }
-
-  return (
-    <select
-      value={config.language}
-      onChange={(e) => changeLanguage(e.target.value)}
-    >
-      <option value="zh-CN">中文</option>
-      <option value="en">English</option>
-    </select>
-  )
+function updateLanguage(lang) {
+  const currentConfig = getConfig()
+  setConfig({
+    ...currentConfig,
+    language: lang
+  })
 }
 ```
 
 ### 加载服务器设置
 
 ```typescript
-import { useSettings, useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { getSettings, setConfig } from '@airiot/client'
 
-function SettingsLoader() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const settings = await useSettings()
-        setConfig(settings)
-      } catch (error) {
-        console.error('Failed to load settings:', error)
-      }
-    }
-    load()
-  }, [])
-
-  return null
+async function loadAppSettings() {
+  try {
+    const settings = await getSettings()
+    setConfig(settings)
+  } catch (error) {
+    console.error('Failed to load settings:', error)
+  }
 }
 ```
 

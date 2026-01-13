@@ -5,7 +5,8 @@ import dayjs from 'dayjs'
 import sha1 from 'crypto-js/sha1'
 import localforage from 'localforage'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
-import { useConfig, useConfigValue, useSettings, useMessage } from '../hooks'
+import { useMessage } from '../hooks'
+import { getConfig } from '../config'
 import api from '../api'
 
 export const useUser = () => {
@@ -43,8 +44,8 @@ export const useLogin = () => {
   const query = useSearchParams()[0]
   const location = useLocation()
   const navigate = useNavigate()
+  const settings = getConfig()
 
-  const { settings } = useConfigValue()
   const { setUser, storageKey } = useUser()
   const message = useMessage()
   const [showCode, setShowCode] = React.useState(false)

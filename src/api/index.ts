@@ -1,5 +1,4 @@
 import clone from 'lodash/clone'
-import get from 'lodash/get'
 import has from 'lodash/has'
 import isArray from 'lodash/isArray'
 import isEmpty from 'lodash/isEmpty'
@@ -13,6 +12,7 @@ import values from 'lodash/values'
 import dayjs from 'dayjs'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { noToken, noGetToken } from './noToken'
+import { getConfig } from '../config'
 
 // 类型定义
 interface User {
@@ -172,7 +172,7 @@ function getTimezoneOffset(): string {
 
 function getHost(options: APIOptions): string {
   if (options?.proxyKey) return options.proxyKey
-  return '/rest/'
+  return getConfig().rest || '/rest/'
 }
 
 function getHeaders(options: FetchOptions, context: AppContext, resource: string, noTokenList: string[], noGetTokenList: string[]): Record<string, string> {

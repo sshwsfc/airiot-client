@@ -36,30 +36,19 @@ npm install crypto-js localforage
 
 ### 2. 初始化全局配置
 
-在应用入口文件（如 App.tsx）中使用 `useSetConfig` 初始化全局配置：
+在应用入口文件（如 index.ts 或 main.tsx）中使用 `setConfig` 初始化全局配置：
 
 ```typescript
-import { useSetConfig } from '@airiot/client'
-import { useEffect } from 'react'
+import { setConfig } from '@airiot/client'
 
-function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 配置全局上下文
-    setConfig({
-      language: 'zh-CN',
-      module: 'admin',
-      settings: {
-        safeRequest: true
-      }
-    })
-  }, [])
-
-  return <div>{/* 应用内容 */}</div>
-}
-
-export default App
+// 配置全局上下文
+setConfig({
+  language: 'zh-CN',
+  module: 'admin',
+  settings: {
+    safeRequest: true
+  }
+})
 ```
 
 ## 创建你的第一个 API
@@ -325,22 +314,18 @@ export default App
 ```typescript
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useSetConfig } from '@airiot/client'
+import { setConfig } from '@airiot/client'
 import LoginPage from './LoginPage'
 import UserManagement from './UserManagement'
 import ProtectedRoute from './ProtectedRoute'
 
+// 初始化全局配置
+setConfig({
+  language: 'zh-CN',
+  module: 'admin'
+})
+
 function App() {
-  const setConfig = useSetConfig()
-
-  useEffect(() => {
-    // 初始化全局配置
-    setConfig({
-      language: 'zh-CN',
-      module: 'admin'
-    })
-  }, [])
-
   return (
     <BrowserRouter>
       <Routes>
