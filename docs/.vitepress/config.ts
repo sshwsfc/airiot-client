@@ -5,7 +5,7 @@ export default defineConfig({
   description: 'Airiot TypeScript 客户端库文档',
   lang: 'zh-CN',
 
-  base: '/@airiot/client/',
+  base: '/airiot-client/',
 
   ignoreDeadLinks: 'localhostLinks',
 
@@ -16,7 +16,7 @@ export default defineConfig({
       { text: '示例', link: '/examples' },
       {
         text: 'GitHub',
-        link: 'https://github.com/airiot/client'
+        link: 'https://github.com/sshwsfc/airiot-client'
       }
     ],
 
@@ -47,7 +47,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/airiot/client' }
+      { icon: 'github', link: 'https://github.com/sshwsfc/airiot-client' }
     ],
 
     search: {
@@ -56,7 +56,7 @@ export default defineConfig({
 
     footer: {
       message: 'MIT Licensed',
-      copyright: 'Copyright © 2025 Airiot'
+      copyright: 'Copyright © 2026 Airiot'
     }
   },
 
