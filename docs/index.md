@@ -14,7 +14,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: 查看 GitHub
-      link: https://github.com/airiot/client
+      link: https://github.com/sshwsfc/airiot-client
 
 features:
   - title: 简单易用

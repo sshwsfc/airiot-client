@@ -10,16 +10,15 @@ export default defineConfig({
   ignoreDeadLinks: 'localhostLinks',
 
   themeConfig: {
-    logo: undefined,
     nav: [
-      { text: '首页', link: '/' },
-      { text: '指南', link: '/getting-started' },
-      { text: '示例', link: '/examples' },
-      {
-        text: 'GitHub',
-        link: 'https://github.com/sshwsfc/airiot-client'
-      }
-    ],
+        { text: '首页', link: '/' },
+        { text: '指南', link: '/getting-started' },
+        { text: '示例', link: '/examples' },
+        {
+          text: 'GitHub',
+          link: 'https://github.com/sshwsfc/airiot-client'
+        }
+      ],
 
     sidebar: [
       {
@@ -62,6 +61,6 @@ export default defineConfig({
   },
 
   head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
+    ['link', { rel: 'icon', href: '/favicon.svg' }]
   ]
 })
