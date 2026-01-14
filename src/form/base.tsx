@@ -19,7 +19,12 @@ import { findFieldByName } from './utils'
 import { fieldBuilder, objectBuilder } from './builder'
 
 const datetimeRegex = /^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\s+(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/
-const ajv = new Ajv({ allErrors: true, verbose: true, nullable: true, formats: { datetime: datetimeRegex } })
+const ajv = new Ajv({
+  allErrors: true,
+  verbose: true,
+  strictSchema: false,
+  formats: { datetime: datetimeRegex }
+})
 
 // i18n support - removed xadmin-i18n dependency
 const t = (key: string, params?: Record<string, any>): string => {
@@ -267,7 +272,7 @@ const SchemaForm = (props: SchemaFormProps) => {
   }
 
   const { fields } = schemaConvert(schema)
-
+  console.log('Converted fields from schema:', fields)
   const validate = (vs: any) => {
     const values = cloneDeep(vs)
 
@@ -275,10 +280,8 @@ const SchemaForm = (props: SchemaFormProps) => {
     const valid = ajValidate(omitNull(values))
 
     if (!valid) {
-      // Removed: app.context.i18n - xadmin dependency
-      // Default to English localization
-      if (ajvLocalize['en']) {
-        ajvLocalize['en'](ajValidate.errors)
+      if (ajvLocalize['zh_Hans']) {
+        ajvLocalize['zh_Hans'](ajValidate.errors)
       }
     }
     let errors = props.validate && isFunction(props.validate) ? props.validate(values) : {}

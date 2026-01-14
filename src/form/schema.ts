@@ -31,11 +31,15 @@ interface SchemaField {
 }
 
 interface FormField {
-  key: string
   name: string
+  key?: string
   label?: string
   type?: string
   fields?: FormField[]
+  component?: React.ComponentType<any>
+  group?: React.ComponentType<any>
+  validate?: any
+  effect?: any
   items?: FormField
   itemsRender?: any
   render?: any

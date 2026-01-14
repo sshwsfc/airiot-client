@@ -1,22 +1,8 @@
 import React from 'react'
 import { Field } from 'react-final-form'
+import { FormField } from './schema'
 
-// Types for form fields and components
-interface FormField {
-  name: string
-  key: string
-  label?: string
-  type?: string
-  component?: React.ComponentType<any>
-  group?: React.ComponentType<any>
-  render?: any
-  fields?: FormField[]
-  validate?: any
-  required?: boolean
-  effect?: any
-  [key: string]: any
-}
-
+// Types for form fields and component options
 interface FieldOption {
   fieldsDefined?: Record<string, FormField>
   fieldValidate?: any
@@ -26,10 +12,14 @@ interface FieldOption {
   [key: string]: any
 }
 
-// Global form fields registry
-let globalFormFields: Record<string, FormField> = {}
+interface FormFieldDefinition extends Omit<FormField, 'name'> {
+  name?: string;
+}
 
-export const setFormFields = (fields: Record<string, FormField>) => {
+// Global form fields registry
+let globalFormFields: Record<string, FormFieldDefinition> = {}
+
+export const setFormFields = (fields: Record<string, FormFieldDefinition>) => {
   globalFormFields = { ...globalFormFields, ...fields }
 }
 

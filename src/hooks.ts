@@ -1,5 +1,6 @@
 import api from './api'
 import { useUser } from './auth'
+import { getConfig } from './config'
 
 export const getSettings = async () => {
   const { user } = useUser()
@@ -20,9 +21,11 @@ export const getSettings = async () => {
 }
 
 export const useMessage = () => {
+  const toast = getConfig().toast
   return { 
-    info: (message: string) => {},
-    success: (message: string) => {},
-    error: (message: string) => {}
+    info: toast?.info || ((message: string) => alert(message)),
+    success: toast?.success || ((message: string) => alert(message)),
+    error: toast?.error || ((message: string) => alert(message)),
+    warning: toast?.warning || ((message: string) => alert(message))
   }
 }

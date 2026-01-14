@@ -10,8 +10,29 @@ import api from '../api'
 
 export const useUser = () => {
   const storageKey = 'user'
+
   const setUser = (user: any) => setConfig({ user })
-  return { user: getConfig().user, setUser, storageKey }
+
+  const loadUser = () => {
+    const storage = localStorage
+    const userStr = storage.getItem(storageKey)
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        const now = dayjs().unix()
+        // 用户信息有效期为7天
+        if (user.time && now - user.time < 7 * 24 * 60 * 60) {
+          setUser(user)
+        } else {
+          storage.removeItem(storageKey)
+        }
+      } catch (err) {
+        console.error('解析用户信息失败:', err)
+        storage.removeItem(storageKey)
+      }
+    }
+  }
+  return { user: getConfig().user, setUser, storageKey, loadUser }
 }
 
 const uploadUser = (storage: Storage, json: any, storageKey: string, setUser: (user: any) => void) => {
@@ -36,13 +57,14 @@ export const useLogin = () => {
 
   const { setUser, storageKey } = useUser()
   const message = useMessage()
-  const [showCode, setShowCode] = React.useState(false)
+  const [ showCode, setShowCode ] = React.useState(false)
+  const [ resetVerifyCode, setResetVerifyCode ] = React.useState<null|string>(null)
 
   const showExtra = false
   const showCodesetting = settings?.notShowCodeAdmin
 
-  const onSubmit = (value: { verifyCode?: string; username: string; password: string; remenber?: boolean }) => {
-    const { verifyCode, username, password, remenber } = value
+  const onSubmit = (value: { verifyCode?: string; username: string; password: string; remember?: boolean }) => {
+    const { verifyCode, username, password, remember } = value
 
     if (!showCodesetting && showCode && isEmpty(verifyCode)) {
       message.info(('验证码不能为空！')); return
@@ -50,7 +72,7 @@ export const useLogin = () => {
 
     const data = { verifyCode, username, password: sha1(password).toString() }
     // 记住我永久储存
-    const storage = remenber ? localStorage : sessionStorage
+    const storage = remember ? localStorage : sessionStorage
 
     return new Promise((resolve, reject) => {
       let url = 'core/auth/login'
@@ -107,7 +129,7 @@ export const useLogin = () => {
           resolve({ needChangePwd, password, id: json.id, username })
         })
         .catch((err: any) => {
-          localStorage.setItem('resetVerifyCode', new Date().toString())
+          setResetVerifyCode(new Date().toString())
           if (err.status !== 451) setShowCode(true)
           if (err.status == 400 || err.status == 451) {
             reject({ ...err.json, username: err?.json?.user, 'FORM_ERROR': err?.json?.user })
@@ -118,7 +140,7 @@ export const useLogin = () => {
     })
   }
 
-  return { showCode, showExtra, onLogin: onSubmit }
+  return { showCode, showExtra, resetVerifyCode, onLogin: onSubmit }
 }
 
 export const useUserReg = () => {

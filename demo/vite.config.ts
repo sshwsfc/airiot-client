@@ -1,28 +1,33 @@
 import path from "path"
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react({
-      babel: {
-        presets: ['jotai/babel/preset'],
+export default defineConfig(({ mode }) => {
+  // 加载环境变量
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [react({
+        babel: {
+          presets: ['jotai/babel/preset'],
+        },
+      }), tailwindcss()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
-    }), tailwindcss()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
     },
-  },
-  server: {
-    port: 3000,
-    proxy: {
-      '/rest': {
-        target: 'http://v4.airiot.tech:3030/',
-        changeOrigin: true,
-        secure: false
+    server: env.AIRIOT_API_TARGET ?{
+      port: env.AIRIOT_API_PORT || 3000,
+      proxy: {
+        '/rest': {
+          target: env.AIRIOT_API_TARGET,
+          changeOrigin: true,
+          secure: false
+        }
       }
-    }
+    } : undefined
   }
 })

@@ -31,7 +31,8 @@ export {
 
 export {
   Form, SchemaForm, useForm,
-  fieldBuilder, objectBuilder, schemaConvert, FieldArray
+  fieldBuilder, objectBuilder, schemaConvert, FieldArray,
+  setFormFields, setSchemaConverters
 } from './form'
 
 export {

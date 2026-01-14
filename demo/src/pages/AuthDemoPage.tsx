@@ -1,35 +1,71 @@
-import { useState } from 'react'
-import { useUser, useLogin, useLogout } from '@airiot/client'
+import { useState, useEffect, type FC, type InputHTMLAttributes } from 'react'
+import { useUser, useLogin, useLogout, createAPI } from '@airiot/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
+const ImageCode: FC<{ input: InputHTMLAttributes<HTMLInputElement>, resetVerifyCode: string | null }> = ({ input, resetVerifyCode }) => {
+  const [url, setUrl] = useState('')
+
+  const getImageCode = () => {
+    const query = { 'height': 36, 'width': 240, 'captchaLen': 4, 'maxSkew': 0.7, 'dotCount': 80 }
+    createAPI({ name: 'core/auth/captcha' })
+      .fetch('?query=' + JSON.stringify(query), {})
+      .then(({ json }) => {
+        setUrl(json.data)
+        // document.getElementsByClassName('codeImg')[0].parentNode.parentNode.lastChild.children[0].style.marginLeft = '18px'
+      })
+      .catch((err) => {
+        throw Error(err)
+      })
+  }
+
+  useEffect(() => {
+    getImageCode()
+  }, [resetVerifyCode])
+
+  return (
+    <div>
+      <label className="text-sm font-medium mb-2">验证码</label>
+      <div className='flex items-center space-x-2'>
+        <Input style={{ maxWidth: '300px' }} {...input} />
+        <img className="dark-code" src={url} alt="" onClick={() => { getImageCode() }} style={{ marginLeft: '20px', maxWidth: '100px', maxHeight: '36px', border: '1px solid #ccc' }} />
+      </div>
+    </div>
+  )
+}
+
 export default function AuthDemoPage() {
   const { user, setUser } = useUser()
-  const { showCode, onLogin } = useLogin()
+  const { showCode, onLogin, resetVerifyCode } = useLogin()
   const { onLogout } = useLogout()
+
   const [loginForm, setLoginForm] = useState({
     username: '',
     password: '',
-    verifyCode: '',
+    verifyCode: undefined,
     remember: false
   })
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     try {
       await onLogin({
         username: loginForm.username,
         password: loginForm.password,
         verifyCode: loginForm.verifyCode,
-        remenber: loginForm.remember
+        remember: loginForm.remember
       })
-      setLoginForm({ username: '', password: '', verifyCode: '', remember: false })
+      setLoginForm({ username: '', password: '', verifyCode: undefined, remember: false })
       alert('登录成功！')
     } catch (err: any) {
       console.error('登录失败:', err)
       alert(`登录失败: ${err.message || err.json?._error || '未知错误'}`)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -53,7 +89,7 @@ export default function AuthDemoPage() {
               <div className="space-y-2">
                 <p><strong>ID:</strong> {user.id}</p>
                 <p><strong>用户名:</strong> {user.username}</p>
-                <p><strong>Token:</strong> {user.token}</p>
+                <p><strong>Token:</strong> <span className="break-all">{user.token}</span></p>
                 <p><strong>权限:</strong> {user.permissions?.join(', ') || '无'}</p>
                 <Button variant="destructive" onClick={handleLogoutClick}>
                   登出
@@ -90,14 +126,12 @@ export default function AuthDemoPage() {
                 />
               </div>
               {showCode && (
-                <div>
-                  <label className="text-sm font-medium mb-2">验证码</label>
-                  <Input
-                    placeholder="请输入验证码"
-                    value={loginForm.verifyCode}
-                    onChange={(e) => setLoginForm({ ...loginForm, verifyCode: e.target.value })}
-                  />
-                </div>
+                <ImageCode
+                  input={{
+                    onChange: (e) => setLoginForm({ ...loginForm, verifyCode: e.target.value })
+                  }}
+                  resetVerifyCode={resetVerifyCode}
+                />
               )}
               <div className="flex items-center space-x-2">
                 <label className="flex items-center space-x-2 text-sm">
@@ -109,8 +143,8 @@ export default function AuthDemoPage() {
                   记住我
                 </label>
               </div>
-              <Button type="submit" className="w-full">
-                登录
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? '登录中...' : '登录'}
               </Button>
             </form>
           </div>

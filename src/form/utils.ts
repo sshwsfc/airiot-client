@@ -1,6 +1,6 @@
 interface Field {
-  name: string
-  key: string
+  name?: string
+  key?: string
   label?: string
   type?: string
   fields?: Field[]
