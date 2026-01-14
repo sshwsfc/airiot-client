@@ -52,11 +52,15 @@ docs/
 - 认证流程说明
 - 用户信息结构
 
-### 4. form.md (7.9 KB)
+### 4. form.md (8 KB)
+- **导出列表** - 所有表单相关的导出
 - `SchemaForm` 组件
 - `Form` 组件
 - `BaseForm` 组件
 - `useForm` Hook
+- `FieldArray` 数组字段组件
+- `setFormFields` 自定义字段渲染器
+- `setSchemaConverters` 自定义 Schema 转换器
 - JSON Schema 格式
 - 基础字段类型
 - 枚举字段
@@ -78,11 +82,10 @@ docs/
 - 原子类型说明
 - 完整示例
 
-### 6. hooks.md (4.6 KB)
-- `useConfig` 全局配置
-- `useConfigValue` 只读配置
-- `useSetConfig` 设置配置
-- `useSettings` 服务器设置
+### 6. hooks.md (4.7 KB)
+- `getConfig` 全局配置
+- `setConfig` 设置配置
+- `getSettings` 服务器设置
 - `useMessage` 消息提示
 - 配置结构说明
 - 使用示例

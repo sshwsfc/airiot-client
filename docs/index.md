@@ -92,9 +92,26 @@ await onLogin({
 
 ### 表单处理
 
-基于 JSON Schema 的表单构建和验证。
+基于 JSON Schema 的表单构建和验证，支持自定义字段渲染器和验证规则。
 
 ```typescript
+import { SchemaForm, setFormFields, setSchemaConverters } from '@airiot/client'
+
+// 自定义字段渲染器
+setFormFields({
+  custom: CustomComponent
+})
+
+// 自定义 Schema 转换器
+setSchemaConverters([
+  (field, schema) => {
+    if (schema.custom) {
+      field.type = 'custom'
+    }
+    return field
+  }
+])
+
 <SchemaForm
   schema={userSchema}
   onSubmit={handleSubmit}

@@ -2,6 +2,30 @@
 
 表单模块基于 JSON Schema 提供强大的表单构建和验证功能。
 
+## 导出
+
+```typescript
+import {
+  // 组件
+  Form,
+  SchemaForm,
+  BaseForm,
+  FieldArray,
+
+  // Hooks
+  useForm,
+
+  // 工具函数
+  fieldBuilder,
+  objectBuilder,
+  schemaConvert,
+
+  // 配置函数
+  setFormFields,
+  setSchemaConverters
+} from '@airiot/client'
+```
+
 ## 组件
 
 ### `SchemaForm`

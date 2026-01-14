@@ -27,6 +27,7 @@ function UserProfile() {
 - `user` - 当前用户信息
 - `setUser` - 设置用户信息的函数
 - `storageKey` - 存储键名（默认为 'user'）
+- `loadUser` - 从 localStorage 加载用户信息的函数
 
 ### `useLogin()`
 
@@ -73,6 +74,7 @@ function LoginForm() {
 **返回值：**
 
 - `showCode` - 是否显示验证码输入框（Boolean）
+- `resetVerifyCode` - 验证码重置标记
 - `onLogin` - 登录函数
 
 **onLogin 参数：**

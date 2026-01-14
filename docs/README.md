@@ -81,7 +81,13 @@ function LoginForm() {
 ### 表单使用示例
 
 ```typescript
-import { SchemaForm } from '@airiot/client'
+import { SchemaForm, setFormFields, Form, FieldArray } from '@airiot/client'
+
+// 自定义字段渲染器
+setFormFields({
+  text: CustomInput,
+  number: CustomNumberInput
+})
 
 const userSchema = {
   type: 'object',

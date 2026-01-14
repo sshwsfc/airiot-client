@@ -84,6 +84,7 @@ function MyComponent() {
     message.info('这是一条信息')
     message.success('操作成功')
     message.error('操作失败')
+    message.warning('警告信息')
   }
 
   return <button onClick={handleClick}>显示消息</button>
