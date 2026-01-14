@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { visualizer } from 'rollup-plugin-visualizer';
+import { visualizer } from 'rollup-plugin-visualizer'
+import dts from 'vite-plugin-dts'
 
 export default defineConfig({
   plugins: [
+    dts({
+      insertTypesEntry: true,
+      include: ['src/**/*'],
+      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/*.spec.ts', 'src/**/*.spec.tsx'],
+      rollupTypes: true,
+      compilerOptions: {
+        removeComments: true
+      }
+    }),
     // visualizer({
     //   filename: '.build_stats.html',
     //   title: 'Build Analysis',
@@ -24,14 +34,13 @@ export default defineConfig({
           'react': 'React',
           'react-dom': 'ReactDOM',
           'react-router': 'ReactRouter',
-          'react-router-dom': 'ReactRouterDOM',
-          'jotai': 'jotai'
+          'react-router-dom': 'ReactRouterDOM'
         }
       },
       external: [
         // 在这里添加不希望打包进库的依赖
         // 例如: 'react', 'react-dom'
-        'react', 'react-dom', 'react-router', 'react-router-dom', 'jotai'
+        'react', 'react-dom', 'react-router', 'react-router-dom'
       ]
     },
     sourcemap: true,

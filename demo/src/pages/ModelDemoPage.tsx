@@ -327,6 +327,8 @@ function ModelContent() {
   const [editingItem, setEditingItem] = useState<any>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  console.log('items', items, loading)
+
   const handleFilter = () => {
     getItems({
       filter: { limit: 10, skip: 0 },
