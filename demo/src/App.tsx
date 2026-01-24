@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import { LayoutDashboard, Database, Shield, FileText, FolderTree, Activity, Settings, Server } from 'lucide-react'
+import { LayoutDashboard, Database, Shield, FileText, FolderTree, Activity, Settings, Server, Table } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -8,18 +8,24 @@ import ApiDemoPage from './pages/ApiDemoPage'
 import AuthDemoPage from './pages/AuthDemoPage'
 import FormDemoPage from './pages/FormDemoPage'
 import ModelDemoPage from './pages/ModelDemoPage'
+import TableModelDemoPage from './pages/TableModelDemoPage'
 import BuiltinModelsPage from './pages/BuiltinModelsPage'
 import ConfigDemoPage from './pages/ConfigDemoPage'
+import HelloWorldPage from './pages/HelloWorldPage'
+import PageHooksDemoPage from './pages/PageHooksDemoPage'
 
 function App() {
   const navigationItems = [
     { path: '/', label: '首页', icon: LayoutDashboard },
+    { path: '/hello', label: 'Hello World', icon: LayoutDashboard },
     { path: '/api', label: 'API 模块', icon: Database },
     { path: '/auth', label: '认证模块', icon: Shield },
     { path: '/form', label: '表单模块', icon: FileText },
     { path: '/model', label: '模型模块', icon: FolderTree },
+    { path: '/table-model', label: '动态表模型', icon: Table },
     { path: '/builtin-models', label: '内置模型', icon: Activity },
-    { path: '/config', label: '全局配置', icon: Settings }
+    { path: '/config', label: '全局配置', icon: Settings },
+    { path: '/page-hooks', label: 'Page Hooks', icon: Activity }
   ]
 
   return (
@@ -92,12 +98,20 @@ function App() {
                   <span>模型模块 - 集成的状态管理</span>
                 </li>
                 <li className="flex items-start space-x-2">
+                  <Table className="h-4 w-4 mt-0.5 text-primary" />
+                  <span>动态表模型 - 服务器动态获取表结构</span>
+                </li>
+                <li className="flex items-start space-x-2">
                   <Activity className="h-4 w-4 mt-0.5 text-primary" />
                   <span>内置模型 - 46 个预置模型</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <Settings className="h-4 w-4 mt-0.5 text-primary" />
                   <span>全局配置 - 应用级别设置</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Activity className="h-4 w-4 mt-0.5 text-primary" />
+                  <span>Page Hooks - 页面级状态管理</span>
                 </li>
               </ul>
             </div>
@@ -107,12 +121,15 @@ function App() {
           <main>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/hello" element={<HelloWorldPage />} />
               <Route path="/api" element={<ApiDemoPage />} />
               <Route path="/auth" element={<AuthDemoPage />} />
               <Route path="/form" element={<FormDemoPage />} />
               <Route path="/model" element={<ModelDemoPage />} />
+              <Route path="/table-model" element={<TableModelDemoPage />} />
               <Route path="/builtin-models" element={<BuiltinModelsPage />} />
               <Route path="/config" element={<ConfigDemoPage />} />
+              <Route path="/page-hooks" element={<PageHooksDemoPage />} />
             </Routes>
           </main>
         </div>

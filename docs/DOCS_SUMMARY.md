@@ -71,13 +71,42 @@ docs/
 - 工具函数
 - 高级功能
 
-### 5. model.md (10 KB)
-- `Model` 组件
-- `ModelContext` 上下文
-- `useModel` Hook
-- 模型 Hooks 列表
+### 5. model.md (22 KB)
+- **组件**
+  - `Model` 组件 - 静态模型组件
+  - `TableModel` 组件 - 动态表模型组件
+  - `ModelContext` 上下文
+- **基础 Hooks**
+  - `useModel` - 获取模型上下文
+  - `useModelValue` - 读取原子值
+  - `useModelState` - 读写原子值
+  - `useSetModelState` - 写入原子值
+  - `useModelCallback` - 创建回调函数
+- **数据操作 Hooks**
+  - `useModelGet` - 获取单条数据
+  - `useModelSave` - 保存数据
+  - `useModelDelete` - 删除数据
+  - `useModelItem` - 组合 Hook（获取+保存+删除）
+  - `useModelGetItems` - 获取列表数据
+  - `useModelEffect` - 模型副作用
+- **列表 Hooks**
+  - `useModelList` - 列表数据
+  - `useModelPagination` - 分页
+  - `useModelCount` - 数据总数
+  - `useModelPageSize` - 页面大小
+  - `useModelFields` - 字段控制
+  - `useModelSelect` - 选择功能
+  - `useModelListRow` - 列表行操作
+  - `useModelListHeader` - 列表表头操作
+  - `useModelListOrder` - 列表排序
+  - `useModelListItem` - 列表项操作
+- **其他 Hooks**
+  - `useModelQuery` - 自定义查询
+  - `useModelPermission` - 权限检查
+  - `useModelEvent` - 事件处理
 - ModelSchema 配置
 - Property 配置
+- Model Registry（内置 46 个 Airiot 系统模型）
 - 状态管理
 - 原子类型说明
 - 完整示例

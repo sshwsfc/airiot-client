@@ -32,7 +32,49 @@ function App() {
 
 **Props：**
 
-- `model` - 模型配置对象（必填）
+- `model` - 模型配置对象（必填）或模型名称（使用内置模型）
+- `name` - 模型名称（可选，用于引用内置模型）
+- `modelKey` - 模型唯一标识（可选，用于区分同名的不同模型实例）
+- `initialValues` - 初始值（可选）
+
+### `TableModel`
+
+动态模型组件，从服务器获取表结构并创建模型上下文。
+
+```typescript
+import { TableModel } from '@airiot/client'
+
+function DynamicTablePage({ tableId }) {
+  return (
+    <TableModel
+      tableId={tableId}
+      loadingComponent={<Spinner />}
+    >
+      <UserList />
+    </TableModel>
+  )
+}
+```
+
+**Props：**
+
+- `tableId` - 表结构 ID，来自 `core/t/schema`（必填）
+- `loadingComponent` - 加载表结构时显示的组件（可选）
+- 其他所有 props 会传递给底层的 `Model` 组件
+
+**行为：**
+
+1. 从 `core/t/schema/{tableId}` 获取表结构
+2. 从 `core/t/schema/tag/{tableId}` 获取表标签
+3. 使用获取的结构创建 `Model` 上下文
+4. 在表结构加载完成前显示加载组件
+
+**使用场景：**
+
+- 动态表管理，从服务器配置
+- 多租户应用，每个租户有不同的表结构
+- 管理后台，管理动态数据模型
+- 需要运行时更改结构的应用
 
 ### `ModelContext`
 
@@ -50,6 +92,8 @@ function ChildComponent() {
 
 ## Hooks
 
+### 基础 Hooks
+
 ### `useModel()`
 
 获取模型上下文。
@@ -66,6 +110,80 @@ function MyComponent() {
   return <div>{model.title}</div>
 }
 ```
+
+### `useModelValue()`
+
+读取模型原子值。
+
+```typescript
+import { useModelValue } from '@airiot/client'
+
+function ItemCount() {
+  const items = useModelValue('items')
+  const count = useModelValue('count')
+
+  return <div>共 {count} 项</div>
+}
+```
+
+### `useModelState()`
+
+读取和写入模型原子值。
+
+```typescript
+import { useModelState } from '@airiot/client'
+
+function FilterControl() {
+  const [wheres, setWheres] = useModelState('wheres')
+
+  const handleFilterChange = (status) => {
+    setWheres({ status: { $eq: status } })
+  }
+
+  return <Select onChange={handleFilterChange} />
+}
+```
+
+### `useSetModelState()`
+
+只写入模型原子值。
+
+```typescript
+import { useSetModelState } from '@airiot/client'
+
+function ResetButton() {
+  const setSelected = useSetModelState('selected')
+
+  const handleReset = () => {
+    setSelected([])
+  }
+
+  return <button onClick={handleReset}>重置选择</button>
+}
+```
+
+### `useModelCallback()`
+
+创建模型回调函数。
+
+```typescript
+import { useModelCallback } from '@airiot/client'
+
+function DataLoader() {
+  const loadItems = useModelCallback(
+    (get, set) => {
+      const items = get(atoms.items)
+      const limit = get(atoms.limit)
+      // 执行加载逻辑
+    },
+    [atoms.items, atoms.limit]
+  )
+
+  return <button onClick={loadItems}>加载</button>
+}
+```
+
+### 数据操作 Hooks
 
 ### `useModelGet()`
 
@@ -121,6 +239,47 @@ function UserItem({ userId }) {
   }
 
   return <button onClick={handleDelete}>删除</button>
+}
+```
+
+### `useModelItem()`
+
+组合 Hook，提供获取、保存和删除功能。
+
+```typescript
+import { useModelItem } from '@airiot/client'
+
+function UserEdit({ userId }) {
+  const { data, loading, saveItem, deleteItem } = useModelItem({ id: userId })
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      <UserForm initialValues={data} onSave={saveItem} />
+      <button onClick={() => deleteItem(userId)}>删除</button>
+    </div>
+  )
+}
+```
+
+### `useModelEffect()`
+
+模型副作用 Hook。
+
+```typescript
+import { useModelEffect } from '@airiot/client'
+
+function DataSync() {
+  useModelEffect(() => {
+    // 当模型状态变化时执行
+    const fetchData = async () => {
+      // 同步数据逻辑
+    }
+    fetchData()
+  }, ['items', 'selected']) // 监听的原子
+
+  return <div>数据同步中...</div>
 }
 ```
 
@@ -187,6 +346,24 @@ function Pagination() {
 }
 ```
 
+### `useModelCount()`
+
+获取数据总数。
+
+```typescript
+import { useModelCount } from '@airiot/client'
+
+function TotalCount() {
+  const { count, loading } = useModelCount()
+
+  return (
+    <div>
+      {loading ? '加载中...' : `共 ${count} 条数据`}
+    </div>
+  )
+}
+```
+
 ### `useModelPageSize()`
 
 页面大小控制。
@@ -222,6 +399,94 @@ function SelectionTable() {
       onSelect={onSelect}
       onSelectAll={onSelectAll}
     />
+  )
+}
+```
+
+### `useModelListRow()`
+
+列表行操作。
+
+```typescript
+import { useModelListRow } from '@airiot/client'
+
+function TableRow({ item }) {
+  const { selected, onSelect, onExpand } = useModelListRow(item)
+
+  return (
+    <tr>
+      <td>
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => onSelect(item)}
+        />
+      </td>
+      <td>{item.name}</td>
+      <td>
+        <button onClick={() => onExpand(item)}>展开</button>
+      </td>
+    </tr>
+  )
+}
+```
+
+### `useModelListHeader()`
+
+列表表头操作。
+
+```typescript
+import { useModelListHeader } from '@airiot/client'
+
+function TableHeader({ field }) {
+  const { order, onOrder } = useModelListHeader(field)
+
+  return (
+    <th onClick={() => onOrder(field)}>
+      {field.title}
+      {order && <span>{order === 'ASC' ? '↑' : '↓'}</span>}
+    </th>
+  )
+}
+```
+
+### `useModelListOrder()`
+
+列表排序控制。
+
+```typescript
+import { useModelListOrder } from '@airiot/client'
+
+function SortControl() {
+  const { orders, setOrder, toggleOrder } = useModelListOrder()
+
+  return (
+    <div>
+      <button onClick={() => setOrder('name', 'ASC')}>按名称升序</button>
+      <button onClick={() => toggleOrder('createdAt')}>切换创建时间排序</button>
+      <div>当前排序：{JSON.stringify(orders)}</div>
+    </div>
+  )
+}
+```
+
+### `useModelListItem()`
+
+列表项操作。
+
+```typescript
+import { useModelListItem } from '@airiot/client'
+
+function ListItem({ item }) {
+  const { selected, loading, onSelect } = useModelListItem(item.id)
+
+  return (
+    <div
+      className={selected ? 'selected' : ''}
+      onClick={() => onSelect(item)}
+    >
+      {loading ? <Spinner /> : <span>{item.name}</span>}
+    </div>
   )
 }
 ```

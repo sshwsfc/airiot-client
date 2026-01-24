@@ -55,4 +55,7 @@ export {
   useModelListOrder,
   useModelListItem
 }
+
 export type { ModelSchema, ModelAtoms }
+
+export { TableModel } from './table'

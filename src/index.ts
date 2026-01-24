@@ -1,7 +1,7 @@
 import createAPI from './api'
 
 export {
-  Model,
+  Model, TableModel,
   ModelContext,
   useModel,
   useModelValue,
@@ -50,6 +50,8 @@ export const api = createAPI
 export {
   createAPI
 }
+
+export * from './page'
 
 export type {
   ModelSchema, ModelAtoms

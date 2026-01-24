@@ -9,17 +9,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [react({
-        babel: {
-          presets: ['jotai/babel/preset'],
-        },
-      }), tailwindcss()],
+    plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    server: env.AIRIOT_API_TARGET ?{
+    server: env.AIRIOT_API_TARGET ? {
       port: env.AIRIOT_API_PORT || 3000,
       proxy: {
         '/rest': {

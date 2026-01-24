@@ -1,0 +1,146 @@
+import { useAtomValue, useSetAtom } from 'jotai'
+import { useAtomCallback } from 'jotai/utils'
+import React from 'react'
+import _ from 'lodash'
+import type { TagOptions, DataPropOptions, SubTag, SubData, TagValue } from './types'
+import { dataPropSelector, tagsState, tagsMetaState, referenceState, tagsTimeoutSelector } from './atoms'
+import { SubscribeContext } from './Store'
+import { useCellDataValue } from '../page/hooks/context'
+
+// ============================================================================
+// Context Hooks
+// ============================================================================
+
+export function useSubscribeContext() {
+  const context = React.useContext(SubscribeContext)
+  if (!context) {
+    throw new Error('useSubscribeContext must be used within Store provider')
+  }
+  return context
+}
+
+// ============================================================================
+// Tag Hooks
+// ============================================================================
+export function useDataTagValue(options: TagOptions) {
+  const { store } = useSubscribeContext()
+  const { tableId, dataId, tagId } = options
+  return useAtomValue(tagsState(`${tableId}|${dataId}|${tagId}`), { store })
+}
+
+export function useDataTag(options: TagOptions) {
+  const { subscribeTags } = useSubscribeContext()
+  const tableDataContext = useCellDataValue()?.tableData
+
+  let dataId, tableId, tagId = options.tagId
+
+  if (options.dataId) {
+    dataId = options.dataId
+    tableId = options.tableId
+  } else {
+    dataId = tableDataContext?.id
+    tableId = tableDataContext?.table?.id || tableDataContext?._table
+  }
+
+  React.useEffect(() => {
+    if (dataId && tableId && tagId) {
+      const subTags: SubTag[] = [{ tableId, dataId, tagId }]
+      subscribeTags(subTags)
+    }
+  }, [dataId, tableId, tagId, subscribeTags])
+
+  return useDataTagValue({ tableId, dataId, tagId })
+}
+
+export function useUpdateTags() {
+  const { store } = useSubscribeContext()
+  return useAtomCallback(React.useCallback((get, set, newValue: Record<string, TagValue> | null | undefined) => {
+      if (newValue && _.isPlainObject(newValue)) {
+        Object.keys(newValue).forEach((id: string) => {
+          const value = newValue[id]
+          const prevValue = get(tagsState(id))
+          set(tagsState(id), { ...(prevValue || {}), ...value })
+        })
+      }
+    }, []), { store })
+}
+
+// ============================================================================
+// Data Hooks
+// ============================================================================
+export function useTableData(options: DataPropOptions) {
+  const { subscribeData } = useSubscribeContext()
+  const tableDataContext = useCellDataValue()?.tableData
+
+  let dataId, tableId
+
+  if (options.dataId) {
+    dataId = options.dataId
+    tableId = options.tableId
+  } else {
+    dataId = tableDataContext?.id
+    tableId = tableDataContext?.table?.id || tableDataContext?._table
+  }
+
+  const newOptions: DataPropOptions = {
+    ...options,
+    dataId,
+    tableId
+  }
+
+  React.useEffect(() => {
+    if (dataId && tableId && options.field) {
+      const subDataIds: SubData[] = [{ tableId, dataId, fields: [options.field] }]
+      subscribeData(subDataIds)
+    }
+  }, [dataId, tableId, options.field, subscribeData])
+
+  return useTableDataValue(newOptions)
+}
+
+export function useTableDataValue(options: DataPropOptions) {
+  const { store } = useSubscribeContext()
+  return useAtomValue(dataPropSelector(options), { store })
+}
+
+export function useUpdateData() {
+  const { store } = useSubscribeContext()
+  return useAtomCallback(React.useCallback((get, set, newValue: Record<string, any> | null | undefined) => {
+      if (newValue && _.isPlainObject(newValue)) {
+        Object.keys(newValue).forEach((dataId: string) => {
+          const value = newValue[dataId]
+          const prevValue = get(tagsMetaState(dataId))
+          set(tagsMetaState(dataId), { ...(prevValue || {}), ...value })
+        })
+      }
+    }, []), { store })
+}
+
+// ============================================================================
+// Tag Timeout Hooks
+// ============================================================================
+
+export function useUpdateTagsTimeout() {
+  const { store } = useSubscribeContext()
+  return useSetAtom(tagsTimeoutSelector, { store })
+}
+
+// ============================================================================
+// Reference/Compute Hooks
+// ============================================================================
+
+export function useReferenceValue(tableId: string, tableDataId: string, field: string) {
+  const { store } = useSubscribeContext()
+  return useAtomValue(referenceState(`${tableId}#%${tableDataId}#%${field}`), { store })
+}
+
+export function useUpdateReference() {
+  const { store } = useSubscribeContext()
+  return useAtomCallback(React.useCallback((_get, set, newValue: any) => {
+      if (newValue?.tableId && newValue?.tableDataId && newValue?.field) {
+        const id = newValue.tableId + '#%' + newValue.tableDataId + '#%' + newValue.field
+        set(referenceState(id), newValue.value || 'computing')
+      }
+    }, []), { store })
+}
+

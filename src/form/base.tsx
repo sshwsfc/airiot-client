@@ -59,7 +59,7 @@ const BaseForm = ({ key, ...props }: BaseFormProps) => {
   const invalid = !(isNil(errors) || isEmpty(errors))
 
   const fieldValidate = React.useCallback(
-    (value: any, values: any, meta: any) => {
+    (value: any, _values: any, meta: any) => {
       if (meta.data?.required) {
         if (!isNumber(value) && isEmpty(value)) {
           return _t(`{{label}} is required`, {
@@ -192,7 +192,7 @@ const Form = (props: FormProps) => {
               resolve(retValue)
             })
             .catch((err: any) => {
-              resolve(err)
+              reject(err)
             })
         })
       } else if (onSubmit.length < 3) {

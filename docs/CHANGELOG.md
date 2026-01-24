@@ -1,5 +1,49 @@
 # 文档更新日志
 
+## 2025-01-18
+
+### 模型模块 (model.md)
+
+**新增 TableModel 组件文档**
+- 添加完整的 TableModel 组件使用说明
+- Props 参数详解（tableId, loadingComponent）
+- 组件行为说明（从服务器获取表结构）
+- 使用场景（动态表管理、多租户应用、管理后台）
+
+**新增基础 Hooks 文档**
+- `useModelValue` - 读取模型原子值
+- `useModelState` - 读写模型原子值
+- `useSetModelState` - 写入模型原子值
+- `useModelCallback` - 创建模型回调函数
+
+**新增数据操作 Hooks 文档**
+- `useModelItem` - 组合 Hook（获取+保存+删除功能）
+- `useModelEffect` - 模型副作用 Hook
+- `useModelCount` - 获取数据总数
+
+**新增列表 Hooks 文档**
+- `useModelListRow` - 列表行操作（选中、展开）
+- `useModelListHeader` - 列表表头操作（排序）
+- `useModelListOrder` - 列表排序控制
+- `useModelListItem` - 列表项操作
+
+**Model Props 更新**
+- 添加 `name` 参数说明（使用内置模型）
+- 添加 `modelKey` 参数说明（区分同名模型实例）
+- 添加 `initialValues` 参数说明
+
+### 文档摘要 (DOCS_SUMMARY.md)
+
+**更新 model.md 条目**
+- 大小更新：10 KB → 22 KB
+- 按类别组织 Hooks 文档：
+  - 基础 Hooks（5 个）
+  - 数据操作 Hooks（6 个）
+  - 列表 Hooks（10 个）
+  - 其他 Hooks（3 个）
+- 标记 TableModel 组件
+- 标记 Model Registry（46 个内置模型）
+
 ## 2025-01-14
 
 ### 认证模块 (auth.md)

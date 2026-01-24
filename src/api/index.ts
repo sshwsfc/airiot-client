@@ -77,6 +77,7 @@ export interface FetchOptions {
 
 export interface APIResponse {
   json: any
+  status?: number
   headers: Record<string, string>
 }
 
