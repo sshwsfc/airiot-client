@@ -142,7 +142,12 @@ setSchemaConverters([
 探索以下资源来更好地使用 @airiot/client：
 
 - [快速开始](./getting-started.md) - 立即开始使用
-- [API 文档](./api.md) - 查看 API 参考
+- [API 模块](./api.md) - HTTP 客户端和数据获取
+- [认证模块](./auth.md) - 登录、登出和用户管理
+- [表单模块](./form.md) - 表单构建和验证
+- [模型模块](./model.md) - 模型管理和状态管理
+- [Page Hooks](./page-hooks.md) - 页面级状态管理
+- [数据订阅](./subscribe.md) - WebSocket 实时数据订阅
 - [使用示例](./examples.md) - 学习实际应用案例
 - [贡献指南](https://github.com/airiot/client/blob/main/CONTRIBUTING.md) - 参与项目贡献
 

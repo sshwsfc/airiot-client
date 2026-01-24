@@ -14,6 +14,8 @@ docs/
 ├── auth.md                 # 认证模块文档
 ├── form.md                 # 表单模块文档
 ├── model.md                # 模型模块文档
+├── page-hooks.md           # Page Hooks 文档
+├── subscribe.md            # 数据订阅模块文档
 ├── hooks.md                # 全局钩子文档
 ├── getting-started.md      # 快速开始指南
 ├── examples.md             # 使用示例
@@ -111,7 +113,75 @@ docs/
 - 原子类型说明
 - 完整示例
 
-### 6. hooks.md (4.7 KB)
+### 6. page-hooks.md (17.6 KB)
+- **概述** - Page Hooks 的基本概念和特性
+- **页面变量 (PageVar)**
+  - `usePageVar` - 获取页面变量的 state 和 setter
+  - `usePageVarValue` - 获取页面变量的值（只读）
+  - `useSetPageVar` - 获取页面变量的 setter（只写）
+  - `usePageVarCallback` - 获取页面变量的回调函数
+- **数据源 (Datasource)**
+  - `useDatasetSet` - 获取数据集的 setter
+  - `useDatasetsValue` - 获取多个数据集的值
+  - `useDatasourceValue` - 通过路径获取数据源值
+- **组件上下文 (Context)**
+  - `useDataVarValue` - 获取组件数据变量的值
+  - `useSetDataVar` - 设置组件数据变量
+- **组件函数 (Functions)**
+  - `useFunctions` - 获取组件函数的 state 和 setter
+  - `useFunctionsValue` - 获取组件函数（只读）
+  - `useFunctionsSet` - 设置组件函数（只写）
+  - `useFunctionsGet` - 获取组件函数的回调
+- **视图状态 (View)**
+  - `useScale` - 获取视图缩放比例的 state 和 setter
+  - `useViewValue` - 获取视图状态的值
+  - `usePlayback` - 获取播放状态的 state 和 setter
+- **迭代数据 (Iteration)**
+  - `useIteration` - 获取迭代上下文
+  - `useIterationValue` - 获取迭代上下文中的值
+- **订阅管理 (Subscribe)**
+  - `useSubscribeValue` - 获取订阅数据
+  - `useSubscribeSet` - 获取订阅管理器的 setter
+- **工具函数**
+  - `createFamily` - 创建 atomFamily
+  - `createCallback` - 创建回调函数
+  - `usePageStore` - 获取页面级别的 Store
+- **完整示例** - 实际应用案例
+- **最佳实践** - 使用建议和技巧
+- **常见问题** - FAQ
+
+### 7. subscribe.md (约 20 KB)
+- **概述** - 数据订阅模块的核心概念
+- **核心概念**
+  - SubTag - 订阅标签类型
+  - SubData - 订阅数据类型
+  - TagValue - 标签值类型
+- **Subscribe Provider**
+  - Provider 组件使用说明
+  - SubscribeContextValue 接口
+  - 依赖项说明
+- **Hooks API**
+  - `useDataTag` - 订阅并获取数据点值
+  - `useDataTagValue` - 获取数据点值（不自动订阅）
+  - `useTableData` - 订阅并获取表数据
+  - `useReferenceValue` - 获取计算记录值
+  - `useSubscribeContext` - 获取订阅上下文
+- **WebSocket 管理**
+  - `useWS` - WebSocket Hook
+  - `useCommWS` - 通用 WebSocket Hook
+  - 连接状态说明
+  - 自动重连机制
+  - 心跳保活
+- **数据查询**
+  - `queryLastData` - 查询最新数据
+  - `queryTableData` - 查询表数据
+  - `queryHistoryData` - 查询历史数据
+  - `queryMeta` - 查询数据点配置
+- **完整示例** - 实际应用案例
+- **最佳实践** - 使用建议和技巧
+- **常见问题** - FAQ
+
+### 8. hooks.md (4.7 KB)
 - `getConfig` 全局配置
 - `setConfig` 设置配置
 - `getSettings` 服务器设置
@@ -119,7 +189,7 @@ docs/
 - 配置结构说明
 - 使用示例
 
-### 7. getting-started.md (8.3 KB)
+### 9. getting-started.md (8.3 KB)
 - 安装指南
 - 基础设置
 - 第一个 API 示例
@@ -130,20 +200,20 @@ docs/
 - 完整示例应用
 - 常见问题
 
-### 8. examples.md (12 KB)
+### 10. examples.md (12 KB)
 - 用户管理系统示例
 - 登录系统示例
 - 数据筛选示例
 - 自定义 API 调用
 - 错误处理
 
-### 9. index.md (3 KB)
+### 11. index.md (3 KB)
 - 首页布局
 - 功能特性列表
 - 快速开始示例
 - 核心功能介绍
 
-### 10. DEPLOYMENT.md (5.8 KB)
+### 12. DEPLOYMENT.md (5.8 KB)
 - 本地预览
 - 部署到 GitHub Pages
 - 部署到 Vercel

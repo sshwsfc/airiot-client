@@ -53,6 +53,8 @@ export {
 
 export * from './page'
 
+export * from './subscribe'
+
 export type {
   ModelSchema, ModelAtoms
 } from './model'

@@ -16,4 +16,6 @@ export {
 
 export * from './queries'
 
+export { useTimeSubscribe, useServerTime } from './servertime'
+
 export * from './types'

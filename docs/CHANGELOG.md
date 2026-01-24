@@ -1,5 +1,46 @@
 # 文档更新日志
 
+## 2025-01-24
+
+### 新增：数据订阅模块 (subscribe.md)
+
+**完整的数据订阅文档**
+- 模块概述和核心概念
+- Subscribe Provider 使用说明
+- 完整的 Hooks API 文档：
+  - `useDataTag` - 订阅并获取数据点值
+  - `useDataTagValue` - 获取数据点值（不自动订阅）
+  - `useTableData` - 订阅并获取表数据
+  - `useReferenceValue` - 获取计算记录值
+  - `useSubscribeContext` - 获取订阅上下文
+- WebSocket 管理文档（useWS, useCommWS）
+- 数据查询函数（queryLastData, queryTableData, queryHistoryData, queryMeta）
+- 完整的使用示例和最佳实践
+- 常见问题解答
+
+### 新增：Subscribe Demo 页面
+
+**完整的功能演示**
+- 订阅管理演示（动态订阅/取消订阅）
+- 多设备监控演示
+- WebSocket 连接状态演示
+- API 使用示例
+- 性能特性展示
+
+### 更新：现有文档
+
+**index.md**
+- 添加数据订阅模块链接
+
+**README.md**
+- 添加数据订阅功能特性说明
+
+**page-hooks.md**
+- 在订阅管理章节添加对数据订阅模块的引用
+
+**demo/src/App.tsx**
+- 添加数据订阅路由和导航
+
 ## 2025-01-18
 
 ### 模型模块 (model.md)

@@ -545,6 +545,8 @@ function IterationItem() {
 
 订阅管理提供了一组 hooks 用于管理数据点订阅。
 
+> **注意：** 更完整的实时数据订阅功能请参考 [数据订阅模块](./subscribe.md)，它提供了基于 WebSocket 的实时数据推送、报警订阅、计算记录订阅等更强大的功能。
+
 ### Hooks
 
 #### `useSubscribeValue()`

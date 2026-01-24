@@ -8,6 +8,7 @@ import api from '../api'
 interface WSMessage {
   message?: string
   data?: any
+  [key: string]: any
 }
 
 interface OnMessageFunc {

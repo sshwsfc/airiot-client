@@ -13,6 +13,7 @@ import BuiltinModelsPage from './pages/BuiltinModelsPage'
 import ConfigDemoPage from './pages/ConfigDemoPage'
 import HelloWorldPage from './pages/HelloWorldPage'
 import PageHooksDemoPage from './pages/PageHooksDemoPage'
+import SubscribeDemoPage from './pages/SubscribeDemoPage'
 
 function App() {
   const navigationItems = [
@@ -25,7 +26,8 @@ function App() {
     { path: '/table-model', label: '动态表模型', icon: Table },
     { path: '/builtin-models', label: '内置模型', icon: Activity },
     { path: '/config', label: '全局配置', icon: Settings },
-    { path: '/page-hooks', label: 'Page Hooks', icon: Activity }
+    { path: '/page-hooks', label: 'Page Hooks', icon: Activity },
+    { path: '/subscribe', label: '数据订阅', icon: Activity }
   ]
 
   return (
@@ -113,6 +115,10 @@ function App() {
                   <Activity className="h-4 w-4 mt-0.5 text-primary" />
                   <span>Page Hooks - 页面级状态管理</span>
                 </li>
+                <li className="flex items-start space-x-2">
+                  <Activity className="h-4 w-4 mt-0.5 text-primary" />
+                  <span>数据订阅 - 实时 WebSocket 数据推送</span>
+                </li>
               </ul>
             </div>
           </aside>
@@ -130,6 +136,7 @@ function App() {
               <Route path="/builtin-models" element={<BuiltinModelsPage />} />
               <Route path="/config" element={<ConfigDemoPage />} />
               <Route path="/page-hooks" element={<PageHooksDemoPage />} />
+              <Route path="/subscribe" element={<SubscribeDemoPage />} />
             </Routes>
           </main>
         </div>
