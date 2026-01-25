@@ -26,7 +26,7 @@ function App() {
     { path: '/table-model', label: '动态表模型', icon: Table },
     { path: '/builtin-models', label: '内置模型', icon: Activity },
     { path: '/config', label: '全局配置', icon: Settings },
-    { path: '/page-hooks', label: 'Page Hooks', icon: Activity },
+    { path: '/page-hooks', label: '画面Hooks', icon: Activity },
     { path: '/subscribe', label: '数据订阅', icon: Activity }
   ]
 

@@ -4,10 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Activity, Database, WifiOff, AlertTriangle, CheckCircle } from 'lucide-react'
-
-// 注意：在实际项目中，这些应该从 '@airiot/client' 导入
-// 由于demo环境可能没有真实的WebSocket后端，这里提供模拟实现用于演示
+import { Activity, Database, WifiOff, AlertTriangle, CheckCircle, Zap } from 'lucide-react'
 
 // ============================================================================
 // 类型定义
@@ -27,14 +24,14 @@ interface TagValue {
   [key: string]: any
 }
 
-// ============================================================================
-// 模拟 Subscribe Context
-// ============================================================================
-
 interface SubscribeContextValue {
   subscribeTags: (tags: SubTag[], clear?: boolean) => void
   subscribeData: (dataIds: any[], clear?: boolean) => void
 }
+
+// ============================================================================
+// 模拟 Subscribe Context
+// ============================================================================
 
 const SubscribeContext = createContext<SubscribeContextValue | null>(null)
 
@@ -50,59 +47,71 @@ function useSubscribeContext(): SubscribeContextValue {
   return context
 }
 
-// 模拟的数据存储（实际项目中由Jotai store管理）
+// 模拟的数据存储（使用 Map）
 const mockDataStore = new Map<string, TagValue>()
 
-// 初始化一些模拟数据
-mockDataStore.set('device-001-temperature', {
-  value: 25.6,
-  time: new Date().toISOString(),
-  timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-  warningState: null
-})
+// 初始化模拟数据
+function initMockData() {
+  const now = new Date().toISOString()
+  mockDataStore.set('device-table|device-001|temperature', {
+    value: 25.6,
+    time: now,
+    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
+    warningState: null
+  })
+  mockDataStore.set('device-table|device-001|humidity', {
+    value: 65.2,
+    time: now,
+    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
+    warningState: null
+  })
+  mockDataStore.set('device-table|device-001|pressure', {
+    value: 101325,
+    time: now,
+    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
+    warningState: null
+  })
+  mockDataStore.set('device-table|device-002|temperature', {
+    value: 28.3,
+    time: now,
+    timeoutState: { isTimeout: true, isOffline: false, level: 2 },
+    warningState: null
+  })
+  mockDataStore.set('device-table|device-002|pressure', {
+    value: 98000,
+    time: now,
+    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
+    warningState: { level: 'warning', message: '压力偏低' }
+  })
+  mockDataStore.set('device-table|device-003|temperature', {
+    value: 22.1,
+    time: now,
+    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
+    warningState: null
+  })
+}
+initMockData()
 
-mockDataStore.set('device-001-humidity', {
-  value: 65.2,
-  time: new Date().toISOString(),
-  timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-  warningState: null
-})
-
-mockDataStore.set('device-001-pressure', {
-  value: 101325,
-  time: new Date().toISOString(),
-  timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-  warningState: null
-})
-
-mockDataStore.set('device-002-temperature', {
-  value: 28.3,
-  time: new Date().toISOString(),
-  timeoutState: { isTimeout: true, isOffline: false, level: 2 },
-  warningState: null
-})
-
-mockDataStore.set('device-002-pressure', {
-  value: 98000,
-  time: new Date().toISOString(),
-  timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-  warningState: { level: 'warning', message: '压力偏低' }
-})
-
-// 模拟 useDataTag hook
+// 模拟 useDataTag hook（自动订阅）
 function useDataTag(options: { tableId?: string; dataId?: string; tagId: string }): TagValue | undefined {
-  const { dataId, tagId } = options
-  const key = `${dataId}-${tagId}`
+  const { tableId = 'device-table', dataId = 'device-001', tagId } = options
+  const { subscribeTags } = useSubscribeContext()
+  const key = `${tableId}|${dataId}|${tagId}`
+
+  // 自动订阅
+  useEffect(() => {
+    if (tableId && dataId && tagId) {
+      subscribeTags([{ tableId, dataId, tagId }])
+    }
+  }, [tableId, dataId, tagId, subscribeTags])
 
   // 模拟实时更新
   const [, setValue] = useState<TagValue | undefined>(mockDataStore.get(key))
 
   useEffect(() => {
-    // 在实际项目中，这里会通过WebSocket接收数据并自动更新
     const interval = setInterval(() => {
       const current = mockDataStore.get(key)
       if (current) {
-        // 模拟数据变化
         const newValue = {
           ...current,
           value: typeof current.value === 'number'
@@ -114,7 +123,6 @@ function useDataTag(options: { tableId?: string; dataId?: string; tagId: string 
         setValue(newValue)
       }
     }, 3000)
-
     return () => clearInterval(interval)
   }, [key])
 
@@ -127,7 +135,6 @@ function useDataTag(options: { tableId?: string; dataId?: string; tagId: string 
 
 // 数据点显示组件
 function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: string; dataId: string }) {
-  // 使用实际的hook（这里是模拟实现）
   const tagValue = useDataTag({ tableId, dataId, tagId })
 
   if (!tagValue) {
@@ -181,8 +188,52 @@ function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: 
   )
 }
 
-// 订阅管理演示
-function SubscriptionManagementDemo() {
+// 自动订阅演示
+function AutoSubscribeDemo() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>自动订阅演示</CardTitle>
+        <CardDescription>使用 useDataTag 自动订阅数据点</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Alert>
+          <Zap className="h-4 w-4" />
+          <AlertDescription>
+            <strong>useDataTag</strong> 会自动订阅数据点，无需手动管理订阅。
+            只需传入 <code>tableId</code>、<code>dataId</code> 和 <code>tagId</code> 即可。
+          </AlertDescription>
+        </Alert>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <DataPointDisplay tagId="temperature" tableId="device-table" dataId="device-001" />
+          <DataPointDisplay tagId="humidity" tableId="device-table" dataId="device-001" />
+          <DataPointDisplay tagId="pressure" tableId="device-table" dataId="device-001" />
+        </div>
+
+        <div className="p-4 bg-muted rounded-md">
+          <p className="text-sm font-medium mb-2">代码示例：</p>
+          <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
+{`import { useDataTag } from '@airiot/client'
+
+function DeviceMonitor() {
+  const temperature = useDataTag({
+    tableId: 'device-table',
+    dataId: 'device-001',
+    tagId: 'temperature'
+  })
+
+  return <div>温度: {temperature?.value}°C</div>
+}`}
+          </pre>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// 手动订阅管理演示
+function ManualSubscribeDemo() {
   const { subscribeTags } = useSubscribeContext()
   const [subscriptions, setSubscriptions] = useState<string[]>([])
   const availableTags = ['temperature', 'humidity', 'pressure', 'flow', 'voltage']
@@ -203,25 +254,28 @@ function SubscriptionManagementDemo() {
         dataId: 'device-001',
         tagId
       }))
-      subscribeTags(tags, true) // clear=true 清除之前的订阅
+      subscribeTags(tags, true)
     }
   }, [subscriptions, subscribeTags])
 
-  const handleSubscribeAll = () => {
-    setSubscriptions(availableTags)
-  }
-
-  const handleClearAll = () => {
-    setSubscriptions([])
-  }
+  const handleSubscribeAll = () => setSubscriptions(availableTags)
+  const handleClearAll = () => setSubscriptions([])
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>订阅管理</CardTitle>
-        <CardDescription>动态管理数据点订阅</CardDescription>
+        <CardTitle>手动订阅管理</CardTitle>
+        <CardDescription>使用 useSubscribeContext 手动管理订阅</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Alert>
+          <Database className="h-4 w-4" />
+          <AlertDescription>
+            使用 <strong>useSubscribeContext</strong> 获取订阅管理方法，
+            配合 <strong>useDataTagValue</strong>（只读，不自动订阅）实现精细控制。
+          </AlertDescription>
+        </Alert>
+
         <div className="flex flex-wrap gap-2">
           {availableTags.map(tagId => (
             <Button
@@ -253,10 +307,23 @@ function SubscriptionManagementDemo() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {subscriptions.map(tagId => (
-            <DataPointDisplay key={tagId} tagId={tagId} tableId="device-table" dataId="device-001" />
-          ))}
+        <div className="p-4 bg-muted rounded-md">
+          <p className="text-sm font-medium mb-2">代码示例：</p>
+          <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
+{`import { useSubscribeContext } from '@airiot/client'
+
+function CustomMonitor() {
+  const { subscribeTags } = useSubscribeContext()
+
+  useEffect(() => {
+    const tags = [
+      { tableId: 'table1', dataId: 'data1', tagId: 'temp' },
+      { tableId: 'table1', dataId: 'data1', tagId: 'pressure' }
+    ]
+    subscribeTags(tags, true) // true = 清除之前的订阅
+  }, [subscribeTags])
+}`}
+          </pre>
         </div>
       </CardContent>
     </Card>
@@ -265,24 +332,11 @@ function SubscriptionManagementDemo() {
 
 // 多设备监控演示
 function MultiDeviceMonitorDemo() {
-  const { subscribeTags } = useSubscribeContext()
   const devices = [
     { id: 'device-001', name: '温度传感器 1', location: '车间 A' },
     { id: 'device-002', name: '压力传感器 2', location: '车间 B' },
     { id: 'device-003', name: '流量计 3', location: '管道 C' }
   ]
-
-  // 初始化订阅所有设备
-  useEffect(() => {
-    const tags: SubTag[] = devices.flatMap(device =>
-      ['temperature'].map(tagId => ({
-        tableId: 'device-table',
-        dataId: device.id,
-        tagId
-      }))
-    )
-    subscribeTags(tags, true)
-  }, [devices, subscribeTags])
 
   return (
     <Card>
@@ -308,23 +362,8 @@ function MultiDeviceMonitorDemo() {
         <Alert>
           <Database className="h-4 w-4" />
           <AlertDescription>
-            所有设备的数据点都通过单个 WebSocket 连接实时推送，自动批量更新，性能优化。
-            <br />
-            <strong>代码示例：</strong>
-            <pre className="mt-2 text-xs bg-muted p-2 rounded">
-{`const { subscribeTags } = useSubscribeContext()
-
-useEffect(() => {
-  const tags = devices.flatMap(device =>
-    ['temperature', 'pressure'].map(tagId => ({
-      tableId: 'device-table',
-      dataId: device.id,
-      tagId
-    }))
-  )
-  subscribeTags(tags, true) // true = 清除之前的订阅
-}, [devices, subscribeTags])`}
-            </pre>
+            每个设备使用独立的 <code>useDataTag</code> hook，自动管理各自的订阅。
+            所有订阅共享同一个 WebSocket 连接，自动批量更新，性能优化。
           </AlertDescription>
         </Alert>
       </CardContent>
@@ -334,127 +373,79 @@ useEffect(() => {
 
 // API 使用演示
 function ApiUsageDemo() {
-  const [activeTab, setActiveTab] = useState('hook')
+  const [activeTab, setActiveTab] = useState('auto')
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>API 使用示例</CardTitle>
-        <CardDescription>查看各种 Hook 的使用方法</CardDescription>
+        <CardTitle>API 使用对比</CardTitle>
+        <CardDescription>自动订阅 vs 手动订阅</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="hook">useDataTag</TabsTrigger>
-            <TabsTrigger value="context">useSubscribeContext</TabsTrigger>
-            <TabsTrigger value="provider">Provider</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="auto">useDataTag (自动)</TabsTrigger>
+            <TabsTrigger value="manual">手动管理</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="hook" className="mt-4">
+          <TabsContent value="auto" className="mt-4">
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">useDataTag</h4>
-                <p className="text-sm text-muted-foreground mb-2">订阅并获取数据点的值</p>
+                <h4 className="font-semibold mb-2">useDataTag - 推荐使用</h4>
+                <p className="text-sm text-muted-foreground mb-2">自动订阅，最简单的方式</p>
                 <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
 {`import { useDataTag } from '@airiot/client'
 
 function TemperatureDisplay() {
-  const tagValue = useDataTag({
+  const temperature = useDataTag({
     tableId: 'device-table',
     dataId: 'device-001',
     tagId: 'temperature'
   })
 
-  return (
-    <div>
-      <p>温度: {tagValue?.value}°C</p>
-      <p>时间: {tagValue?.time}</p>
-      <p>状态: {
-        tagValue?.timeoutState?.isOffline
-          ? '离线'
-          : '在线'
-      }</p>
-    </div>
-  )
+  return <div>{temperature?.value}°C</div>
 }`}
                 </pre>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="context" className="mt-4">
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">useSubscribeContext</h4>
-                <p className="text-sm text-muted-foreground mb-2">获取订阅管理方法</p>
-                <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
-{`import { useSubscribeContext } from '@airiot/client'
-
-function SubscribeButton() {
-  const { subscribeTags } = useSubscribeContext()
-
-  const handleSubscribe = () => {
-    subscribeTags([
-      { tableId: 'table1', dataId: 'data1', tagId: 'tag1' },
-      { tableId: 'table1', dataId: 'data1', tagId: 'tag2' }
-    ])
-  }
-
-  return (
-    <button onClick={handleSubscribe}>
-      订阅数据点
-    </button>
-  )
-}`}
-                </pre>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-2">批量订阅</h4>
-                <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
-{`useEffect(() => {
-  const tags = [
-    { tableId: 'table1', dataId: 'data1', tagId: 'tag1' },
-    { tableId: 'table1', dataId: 'data2', tagId: 'tag1' }
-  ]
-  subscribeTags(tags, true) // true = 清除之前的订阅
-}, [subscribeTags])`}
-                </pre>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="provider" className="mt-4">
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Subscribe Provider</h4>
-                <p className="text-sm text-muted-foreground mb-2">在应用根部包裹Provider</p>
-                <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
-{`import { Subscribe } from '@airiot/client'
-
-function App() {
-  return (
-    <Subscribe>
-      <YourComponents />
-    </Subscribe>
-  )
-}`}
-                </pre>
-              </div>
-
-              <Alert>
-                <AlertDescription>
-                  <strong>注意：</strong>Subscribe Provider 会自动处理：
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>WebSocket 连接管理</li>
-                    <li>订阅列表管理（使用 useRef）</li>
-                    <li>防抖优化（500ms）</li>
-                    <li>超时检测（Web Worker）</li>
-                    <li>报警订阅</li>
-                    <li>计算记录订阅</li>
+                <div className="mt-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+                  <p className="text-sm"><strong>优点：</strong></p>
+                  <ul className="text-sm list-disc list-inside space-y-1">
+                    <li>✅ 自动订阅，无需手动管理</li>
+                    <li>✅ 组件卸载自动取消订阅</li>
+                    <li>✅ 代码简洁，易于维护</li>
                   </ul>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="manual" className="mt-4">
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">手动订阅 - 高级用法</h4>
+                <p className="text-sm text-muted-foreground mb-2">适合需要精细控制的场景</p>
+                <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
+{`import { useSubscribeContext, useDataTagValue } from '@airiot/client'
+
+function CustomMonitor() {
+  const { subscribeTags } = useSubscribeContext()
+  const value = useDataTagValue({ tableId: '...', dataId: '...', tagId: '...' })
+
+  useEffect(() => {
+    subscribeTags([{ tableId: '...', dataId: '...', tagId: '...' }], true)
+  }, [subscribeTags])
+
+  return <div>{value?.value}</div>
+}`}
+                </pre>
+                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                  <p className="text-sm"><strong>适用场景：</strong></p>
+                  <ul className="text-sm list-disc list-inside space-y-1">
+                    <li>📊 批量订阅多个数据点</li>
+                    <li>🎯 需要精确控制订阅时机</li>
+                    <li>⚡ 性能优化，避免重复订阅</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
@@ -463,44 +454,72 @@ function App() {
   )
 }
 
-// 实际使用示例
-function RealUsageExample() {
-  const { subscribeTags } = useSubscribeContext()
+// 实际应用场景
+function RealWorldExample() {
+  const [selectedDevice, setSelectedDevice] = useState('device-001')
 
-  useEffect(() => {
-    // 订阅数据点
-    subscribeTags([
-      { tableId: 'device-table', dataId: 'device-001', tagId: 'temperature' },
-      { tableId: 'device-table', dataId: 'device-001', tagId: 'pressure' }
-    ], true)
-  }, [subscribeTags])
+  const temperature = useDataTag({
+    tableId: 'device-table',
+    dataId: selectedDevice,
+    tagId: 'temperature'
+  })
+
+  const pressure = useDataTag({
+    tableId: 'device-table',
+    dataId: selectedDevice,
+    tagId: 'pressure'
+  })
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>实际使用示例</CardTitle>
-        <CardDescription>展示如何在实际项目中使用Subscribe</CardDescription>
+        <CardTitle>实际应用场景</CardTitle>
+        <CardDescription>设备监控系统示例</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={selectedDevice === 'device-001' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedDevice('device-001')}
+          >
+            设备 1
+          </Button>
+          <Button
+            variant={selectedDevice === 'device-002' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedDevice('device-002')}
+          >
+            设备 2
+          </Button>
+          <Button
+            variant={selectedDevice === 'device-003' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedDevice('device-003')}
+          >
+            设备 3
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-card border rounded-md">
             <h4 className="font-semibold mb-2">温度监控</h4>
-            <DataPointDisplay tagId="temperature" tableId="device-table" dataId="device-001" />
+            <DataPointDisplay tagId="temperature" tableId="device-table" dataId={selectedDevice} />
           </div>
           <div className="p-4 bg-card border rounded-md">
             <h4 className="font-semibold mb-2">压力监控</h4>
-            <DataPointDisplay tagId="pressure" tableId="device-table" dataId="device-001" />
+            <DataPointDisplay tagId="pressure" tableId="device-table" dataId={selectedDevice} />
           </div>
         </div>
 
         <Alert>
+          <Zap className="h-4 w-4" />
           <AlertDescription>
-            <strong>实现要点：</strong>
+            <strong>关键特性：</strong>
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-              <li>使用 <code>useSubscribeContext</code> 获取订阅管理方法</li>
-              <li>使用 <code>useDataTag</code> 订阅并获取数据点值</li>
-              <li>在 useEffect 中调用 <code>subscribeTags</code> 建立订阅</li>
-              <li>数据会通过 WebSocket 自动更新，组件自动重渲染</li>
+              <li>切换设备时，useDataTag 会自动订阅新设备的数据点</li>
+              <li>旧设备的订阅会自动清理，避免内存泄漏</li>
+              <li>所有数据实时更新，每3秒模拟一次数据变化</li>
             </ul>
           </AlertDescription>
         </Alert>
@@ -518,8 +537,15 @@ interface MockSubscribeProviderProps {
 }
 
 function MockSubscribeProvider({ children }: MockSubscribeProviderProps) {
+  const [subscribedTags, setSubscribedTags] = React.useState<SubTag[]>([])
+
   const subscribeTags = React.useCallback((tags: SubTag[], clear?: boolean) => {
     console.log('订阅标签:', tags, '清除之前:', clear)
+    if (clear) {
+      setSubscribedTags(tags)
+    } else {
+      setSubscribedTags(prev => [...prev, ...tags])
+    }
   }, [])
 
   const subscribeData = React.useCallback((dataIds: any[], clear?: boolean) => {
@@ -549,7 +575,7 @@ function SubscribeDemoPage() {
         <div>
           <h1 className="text-3xl font-bold">Subscribe 模块演示</h1>
           <p className="text-muted-foreground mt-2">
-            Subscribe 模块提供了实时数据订阅功能，通过 WebSocket 实现数据点、表数据、报警信息和计算记录的实时推送。
+            Subscribe 模块提供了实时数据订阅功能，通过 WebSocket 实现数据点和表数据的实时推送。
           </p>
         </div>
 
@@ -565,30 +591,32 @@ function SubscribeDemoPage() {
           </AlertDescription>
         </Alert>
 
-        <Tabs defaultValue="real-usage" className="w-full">
+        <Tabs defaultValue="real-world" className="w-full">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-            <TabsTrigger value="real-usage">实际示例</TabsTrigger>
-            <TabsTrigger value="subscription">订阅管理</TabsTrigger>
-            <TabsTrigger value="multi-device">多设备监控</TabsTrigger>
-            <TabsTrigger value="api">API 使用</TabsTrigger>
+            <TabsTrigger value="real-world">实际场景</TabsTrigger>
+            <TabsTrigger value="auto">自动订阅</TabsTrigger>
+            <TabsTrigger value="manual">手动管理</TabsTrigger>
+            <TabsTrigger value="multi-device">多设备</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="real-usage" className="mt-6">
-            <RealUsageExample />
+          <TabsContent value="real-world" className="mt-6">
+            <RealWorldExample />
           </TabsContent>
 
-          <TabsContent value="subscription" className="mt-6">
-            <SubscriptionManagementDemo />
+          <TabsContent value="auto" className="mt-6">
+            <AutoSubscribeDemo />
+          </TabsContent>
+
+          <TabsContent value="manual" className="mt-6">
+            <ManualSubscribeDemo />
           </TabsContent>
 
           <TabsContent value="multi-device" className="mt-6">
             <MultiDeviceMonitorDemo />
           </TabsContent>
-
-          <TabsContent value="api" className="mt-6">
-            <ApiUsageDemo />
-          </TabsContent>
         </Tabs>
+
+        <ApiUsageDemo />
 
         <Card>
           <CardHeader>

@@ -38,8 +38,9 @@ const Subscribe: React.FC<StoreProps> = ({ children }) => {
   const { subscribe: subscribeTags } = useDataTagSubscribe()
   const { subscribe: subscribeData } = useTableDataSubscribe()
   
-  useComputeSubscribe()
-  useTagsTimeoutSubscribe()
+  // useComputeSubscribe()
+  // useTagsTimeoutSubscribe()
+  // useTagWarningSubscribe()
 
   const contextValue: SubscribeContextValue = React.useMemo(() => ({
     store,

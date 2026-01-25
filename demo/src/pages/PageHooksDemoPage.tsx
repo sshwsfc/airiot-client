@@ -8,15 +8,14 @@ import {
   usePageVar,
   usePageVarValue,
   useSetPageVar,
-  useDatasourceValue,
-  useDataVarValue,
-  useSetDataVar,
   useFunctions,
   useFunctionsSet,
+  useCellDataValue,
   useScale,
   useViewValue,
   useIteration,
-  useIterationValue
+  useIterationValue,
+  Page
 } from '@airiot/client'
 
 // 模拟 PageStoreContext Provider
@@ -149,15 +148,9 @@ function DatasourceDemo() {
 // Context 演示组件
 function ContextDemo() {
   const [componentId, setComponentId] = useState('chart1')
-  const data = useDataVarValue(componentId)
-  const setData = useSetDataVar(componentId)
+  const data = useCellDataValue()
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'active'>('idle')
-
-  useEffect(() => {
-    // 初始化组件数据
-    setData({ status, value: Math.random() * 100 })
-  }, [status, setData])
 
   const mockComponentData = {
     chart1: { status: 'active', value: 75.5, unit: '%' },
@@ -288,7 +281,6 @@ function FunctionsDemo() {
 function ViewDemo() {
   const [scale, setScale] = useScale()
   const viewState = useViewValue()
-  const [playback, setPlayback] = usePlayback()
 
   const handleZoomIn = () => setScale(Math.min(scale + 10, 200))
   const handleZoomOut = () => setScale(Math.max(scale - 10, 50))
@@ -317,21 +309,10 @@ function ViewDemo() {
           </div>
         </div>
 
-        <div>
-          <p className="text-sm font-medium mb-2">播放状态:</p>
-          <Button
-            onClick={() => setPlayback({ ...playback, isPlaying: !playback?.isPlaying })}
-            variant={playback?.isPlaying ? 'default' : 'outline'}
-          >
-            {playback?.isPlaying ? '暂停' : '播放'}
-          </Button>
-        </div>
-
         <div className="p-4 bg-muted rounded-md">
           <p className="text-xs font-mono">
             useScale(): 获取缩放比例的 state 和 setter<br/>
-            useViewValue(path): 获取视图状态的值<br/>
-            usePlayback(): 获取播放状态的 state 和 setter
+            useViewValue(path): 获取视图状态的值
           </p>
         </div>
       </CardContent>
@@ -405,61 +386,63 @@ function IterationDemo() {
 // 主演示组件
 function PageHooksDemoPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Page Hooks 演示</h1>
-        <p className="text-muted-foreground mt-2">
-          Page Hooks 提供了一组用于页面开发的 React Hooks，用于管理页面变量、数据源订阅、组件上下文等。
-        </p>
-      </div>
-
-      <Tabs defaultValue="pagevar" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          <TabsTrigger value="pagevar">页面变量</TabsTrigger>
-          <TabsTrigger value="datasource">数据源</TabsTrigger>
-          <TabsTrigger value="context">上下文</TabsTrigger>
-          <TabsTrigger value="functions">函数</TabsTrigger>
-          <TabsTrigger value="view">视图</TabsTrigger>
-          <TabsTrigger value="iteration">迭代</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pagevar" className="mt-6">
-          <PageVarDemo />
-        </TabsContent>
-
-        <TabsContent value="datasource" className="mt-6">
-          <DatasourceDemo />
-        </TabsContent>
-
-        <TabsContent value="context" className="mt-6">
-          <ContextDemo />
-        </TabsContent>
-
-        <TabsContent value="functions" className="mt-6">
-          <FunctionsDemo />
-        </TabsContent>
-
-        <TabsContent value="view" className="mt-6">
-          <ViewDemo />
-        </TabsContent>
-
-        <TabsContent value="iteration" className="mt-6">
-          <IterationDemo />
-        </TabsContent>
-      </Tabs>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>文档链接</CardTitle>
-          <CardDescription>查看详细的 API 文档和更多示例</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm">
-            详细的文档请参考: <code className="bg-muted px-2 py-1 rounded">docs/page-hooks.md</code>
+    <Page>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Page Hooks 演示</h1>
+          <p className="text-muted-foreground mt-2">
+            Page Hooks 提供了一组用于页面开发的 React Hooks，用于管理页面变量、数据源订阅、组件上下文等。
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+        <Tabs defaultValue="pagevar" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+            <TabsTrigger value="pagevar">页面变量</TabsTrigger>
+            <TabsTrigger value="datasource">数据源</TabsTrigger>
+            <TabsTrigger value="context">上下文</TabsTrigger>
+            <TabsTrigger value="functions">函数</TabsTrigger>
+            <TabsTrigger value="view">视图</TabsTrigger>
+            <TabsTrigger value="iteration">迭代</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pagevar" className="mt-6">
+            <PageVarDemo />
+          </TabsContent>
+
+          <TabsContent value="datasource" className="mt-6">
+            <DatasourceDemo />
+          </TabsContent>
+
+          <TabsContent value="context" className="mt-6">
+            <ContextDemo />
+          </TabsContent>
+
+          <TabsContent value="functions" className="mt-6">
+            <FunctionsDemo />
+          </TabsContent>
+
+          <TabsContent value="view" className="mt-6">
+            <ViewDemo />
+          </TabsContent>
+
+          <TabsContent value="iteration" className="mt-6">
+            <IterationDemo />
+          </TabsContent>
+        </Tabs>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>文档链接</CardTitle>
+            <CardDescription>查看详细的 API 文档和更多示例</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">
+              详细的文档请参考: <code className="bg-muted px-2 py-1 rounded">docs/page-hooks.md</code>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </Page>
   )
 }
 
