@@ -88,8 +88,7 @@ export const useModelGet = ({ id, query, item }: { id?: string; query?: any; ite
       setState({ data, loading: true })
       api.get(id).then((payload: any) => {
         setState({ data: payload, loading: false })
-      })    
-      setState({ data: defaultData, loading: false })
+      })
     } else {
       setState({ data: defaultData, loading: false })
     }

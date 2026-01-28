@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Activity, Database, WifiOff, AlertTriangle, CheckCircle, Zap } from 'lucide-react'
+import { Subscribe, useDataTag } from '@airiot/client' // 假设从 @airiot/client 导入实际的 Subscribe 组件和 hooks
 
 // ============================================================================
 // 类型定义
@@ -46,92 +47,6 @@ function useSubscribeContext(): SubscribeContextValue {
   }
   return context
 }
-
-// 模拟的数据存储（使用 Map）
-const mockDataStore = new Map<string, TagValue>()
-
-// 初始化模拟数据
-function initMockData() {
-  const now = new Date().toISOString()
-  mockDataStore.set('device-table|device-001|temperature', {
-    value: 25.6,
-    time: now,
-    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-    warningState: null
-  })
-  mockDataStore.set('device-table|device-001|humidity', {
-    value: 65.2,
-    time: now,
-    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-    warningState: null
-  })
-  mockDataStore.set('device-table|device-001|pressure', {
-    value: 101325,
-    time: now,
-    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-    warningState: null
-  })
-  mockDataStore.set('device-table|device-002|temperature', {
-    value: 28.3,
-    time: now,
-    timeoutState: { isTimeout: true, isOffline: false, level: 2 },
-    warningState: null
-  })
-  mockDataStore.set('device-table|device-002|pressure', {
-    value: 98000,
-    time: now,
-    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-    warningState: { level: 'warning', message: '压力偏低' }
-  })
-  mockDataStore.set('device-table|device-003|temperature', {
-    value: 22.1,
-    time: now,
-    timeoutState: { isTimeout: false, isOffline: false, level: 0 },
-    warningState: null
-  })
-}
-initMockData()
-
-// 模拟 useDataTag hook（自动订阅）
-function useDataTag(options: { tableId?: string; dataId?: string; tagId: string }): TagValue | undefined {
-  const { tableId = 'device-table', dataId = 'device-001', tagId } = options
-  const { subscribeTags } = useSubscribeContext()
-  const key = `${tableId}|${dataId}|${tagId}`
-
-  // 自动订阅
-  useEffect(() => {
-    if (tableId && dataId && tagId) {
-      subscribeTags([{ tableId, dataId, tagId }])
-    }
-  }, [tableId, dataId, tagId, subscribeTags])
-
-  // 模拟实时更新
-  const [, setValue] = useState<TagValue | undefined>(mockDataStore.get(key))
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = mockDataStore.get(key)
-      if (current) {
-        const newValue = {
-          ...current,
-          value: typeof current.value === 'number'
-            ? current.value + (Math.random() - 0.5) * 2
-            : current.value,
-          time: new Date().toISOString()
-        }
-        mockDataStore.set(key, newValue)
-        setValue(newValue)
-      }
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [key])
-
-  return mockDataStore.get(key)
-}
-
-// ============================================================================
-// 演示组件
-// ============================================================================
 
 // 数据点显示组件
 function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: string; dataId: string }) {
@@ -458,18 +373,6 @@ function CustomMonitor() {
 function RealWorldExample() {
   const [selectedDevice, setSelectedDevice] = useState('device-001')
 
-  const temperature = useDataTag({
-    tableId: 'device-table',
-    dataId: selectedDevice,
-    tagId: 'temperature'
-  })
-
-  const pressure = useDataTag({
-    tableId: 'device-table',
-    dataId: selectedDevice,
-    tagId: 'pressure'
-  })
-
   return (
     <Card>
       <CardHeader>
@@ -528,41 +431,6 @@ function RealWorldExample() {
   )
 }
 
-// ============================================================================
-// 模拟的 Subscribe Provider
-// ============================================================================
-
-interface MockSubscribeProviderProps {
-  children: React.ReactNode
-}
-
-function MockSubscribeProvider({ children }: MockSubscribeProviderProps) {
-  const [subscribedTags, setSubscribedTags] = React.useState<SubTag[]>([])
-
-  const subscribeTags = React.useCallback((tags: SubTag[], clear?: boolean) => {
-    console.log('订阅标签:', tags, '清除之前:', clear)
-    if (clear) {
-      setSubscribedTags(tags)
-    } else {
-      setSubscribedTags(prev => [...prev, ...tags])
-    }
-  }, [])
-
-  const subscribeData = React.useCallback((dataIds: any[], clear?: boolean) => {
-    console.log('订阅数据:', dataIds, '清除之前:', clear)
-  }, [])
-
-  const contextValue: SubscribeContextValue = React.useMemo(() => ({
-    subscribeTags,
-    subscribeData
-  }), [subscribeTags, subscribeData])
-
-  return (
-    <SubscribeContext.Provider value={contextValue}>
-      {children}
-    </SubscribeContext.Provider>
-  )
-}
 
 // ============================================================================
 // 主演示组件
@@ -570,7 +438,7 @@ function MockSubscribeProvider({ children }: MockSubscribeProviderProps) {
 
 function SubscribeDemoPage() {
   return (
-    <MockSubscribeProvider>
+    <Subscribe>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Subscribe 模块演示</h1>
@@ -630,7 +498,7 @@ function SubscribeDemoPage() {
           </CardContent>
         </Card>
       </div>
-    </MockSubscribeProvider>
+    </Subscribe>
   )
 }
 

@@ -1,80 +1,66 @@
----
-name: airiot
-description: "Complete AIRIOT Platform Development Guide - React TypeScript client with shadcn/ui framework, Vite build tool, and MCP server integration. Covers project initialization, development standards, and comprehensive client library usage including API client (createAPI, CRUD operations), Authentication (useLogin, useLogout, useUser), JSON Schema Forms (SchemaForm, FieldArray), Jotai-based State Management (Model, TableModel, useModel hooks), Page Hooks (usePageVar, useDatasourceValue), Real-time Data Subscription (Subscribe, useDataTag, useTableData), and Configuration (setConfig, useMessage)."
-version: "1.0.0"
----
+# AIRIOT 平台 Skill 文档
 
-# AIRIOT Platform Development Guide
-
-Complete guide for AI Agents to correctly and efficiently develop with the AIRIOT platform capabilities and framework.
-
-## Table of Contents
-
-- [Part 1: AIRIOT Project Initialization & Installation](#part-1-ariot-project-initialization--installation)
-- [Part 2: AIRIOT Project Structure & Development Standards](#part-2-ariot-project-structure--development-standards)
-- [Part 3: AIRIOT Client Usage Guide](#part-3-ariot-client-usage-guide)
+本文档为 AI Agent 提供完整的 AIRIOT 平台开发指南，涵盖项目初始化、开发规范和客户端使用三个核心部分。
 
 ---
 
-## Part 1: AIRIOT Project Initialization & Installation
+## 第一部分：AIRIOT 项目初始化与安装
 
-### 1.1 Technology Stack
+### 1.1 项目创建命令
 
-AIRIOT frontend projects are built on **shadcn/ui framework** with **Vite** build tool.
-
-### 1.2 Project Creation Command
+基于 shadcn/ui 框架的 AIRIOT 项目初始化命令如下：
 
 ```bash
 npx shadcn@latest create --preset "radix-mira" --template vite airiot-project
 ```
 
-**Core Configuration Parameters:**
-- `--preset "radix-mira"`: Use Radix Mira design style preset
-- `--template vite`: Vite-based build tool template
-- `airiot-project`: Project name (can be modified as needed)
+**核心配置参数：**
+- `--preset "radix-mira"`：使用 Radix Mira 设计风格的预设配置
+- `--template vite`：基于 Vite 构建工具的模板
+- `airiot-project`：项目名称（可根据实际需求修改）
 
-### 1.3 Core Dependencies & Services
+### 1.2 核心依赖与服务
 
-#### 1.3.1 AIRIOT MCP Service Installation
+#### 1.2.1 安装与配置 AIRIOT MCP 服务
 
-The AIRIOT MCP (Model-Context-Protocol) service is the core backend component for communicating with the AIRIOT platform, following the Model-Controller-Provider (MCP) architecture.
+AIRIOT MCP (Model-Context-Protocol) 服务是项目与 AIRIOT 平台通信的核心后端组件，遵循模型-控制器-提供者（MCP）架构，负责所有平台接口的调用。
 
-**Start MCP Service:**
+**启动 MCP 服务：**
 
 ```bash
 npx @airiot/mcp-server
 ```
 
-**Environment Variables Configuration:**
+**环境变量配置：**
 
-The MCP service requires the following environment variables. The system will prompt for configuration if not set:
+MCP 服务启动时需配置以下环境变量。如果未配置，系统会提示用户填写：
 
 ```bash
-# AIRIOT Server Configuration
+# AIRIOT 服务器配置
 AIRIOT_BASE_URL=https://your-airiot-server.com
 AIRIOT_PROJECT_ID=your-project-id
 
-# Authentication Configuration (choose one)
+# 认证配置（二选一）
 AIRIOT_TOKEN=your-api-token
-# OR use username/password authentication
+# 或者使用用户名密码认证
 # AIRIOT_USERNAME=your-username
 # AIRIOT_PASSWORD=your-password
 ```
 
-**Configuration Description:**
-- **AIRIOT_BASE_URL**: AIRIOT platform server address
-- **AIRIOT_PROJECT_ID**: Project unique identifier
-- **Authentication (choose one)**:
-  - Use `AIRIOT_TOKEN` for API token authentication
-  - OR use `AIRIOT_USERNAME` and `AIRIOT_PASSWORD` for username/password authentication
+**配置说明：**
+- **AIRIOT_BASE_URL**：AIRIOT 平台服务器地址
+- **AIRIOT_PROJECT_ID**：项目唯一标识符
+- **认证方式二选一**：
+  - 使用 `AIRIOT_TOKEN` 进行 API 令牌认证
+  - 或使用 `AIRIOT_USERNAME` 和 `AIRIOT_PASSWORD` 进行用户名密码认证
 
-**Install MCP Server to AI Agent:**
+**MCP Server 安装到 AI Agent：**
 
-Install the MCP server to your AI agent's MCP server configuration based on the above information.
+请根据以上 MCP 运行信息安装到自己的 AI Agent MCP server 配置中。
 
-#### 1.3.2 Install AIRIOT Client SDK
+#### 1.2.2 安装 AIRIOT Client SDK
 
-Install the AIRIOT client toolkit package for type-safe, well-encapsulated platform functionality calls:
+在项目中安装 AIRIOT 客户端工具包，为前端代码提供类型安全、封装良好的平台功能调用方法：
 
 ```bash
 npm i -s @airiot/client@latest
@@ -82,140 +68,142 @@ npm i -s @airiot/client@latest
 
 ---
 
-## Part 2: AIRIOT Project Structure & Development Standards
+## 第二部分：AIRIOT 项目结构与开发规范
 
-### 2.1 Source Code Directory Structure
+### 2.1 源码目录结构
 
-All source code is located in the **`src`** directory with strict adherence to the following conventions:
+项目所有源代码均位于 **`src`** 目录下，其结构严格遵守以下约定：
 
-| Directory Path | Purpose & File Type Description |
+| 目录路径 | 用途与文件类型说明 |
 | :--- | :--- |
-| `src/pages/` | Store all **page-level** components and routing files |
-| `src/blocks/` | Store **block-level** reusable components (large functional modules) |
-| `src/components/` | Store **business-level** common components |
-| `src/components/ui/` | Store **basic UI components** (shadcn/ui based components and business-independent pure presentation components) |
-| Other directories | Consistent with **shadcn/ui** project standard directory structure |
+| `src/pages/` | 存放所有**页面级**组件与路由文件 |
+| `src/blocks/` | 存放**区块级**可复用组件（大型功能模块） |
+| `src/components/` | 存放**业务级**通用组件 |
+| `src/components/ui/` | 存放**基础 UI 组件**（基于 shadcn/ui 的组件及业务无关的纯展示组件） |
+| 其他目录 | 与 **shadcn/ui** 项目的标准目录结构保持一致 |
 
-### 2.2 Development Standards
+### 2.2 开发规范
 
-#### 2.2.1 Component Naming Conventions
+#### 2.2.1 组件命名规范
 
-- **Page Components**: Use PascalCase, filename matches component name, e.g., `UserManagementPage.tsx`
-- **Block Components**: Use PascalCase, e.g., `DataTable.tsx`
-- **Business Components**: Use PascalCase, e.g., `UserCard.tsx`
-- **UI Components**: Use kebab-case, e.g., `button.tsx`, `input.tsx`
+- **页面组件**：使用 PascalCase，文件名与组件名一致，例如：`UserManagementPage.tsx`
+- **区块组件**：使用 PascalCase，例如：`DataTable.tsx`
+- **业务组件**：使用 PascalCase，例如：`UserCard.tsx`
+- **UI 组件**：使用 kebab-case，例如：`button.tsx`、`input.tsx`
 
-#### 2.2.2 File Organization Standards
+#### 2.2.2 文件组织规范
 
-- **Organize by functional modules**: Related components placed in same directory
-- **Promote shared components**: Components used in multiple places should be in `components/` directory
-- **Isolate UI components**: Pure presentation components in `components/ui/` directory
+- **按功能模块组织**：相关组件放在同一目录下
+- **共享组件提升**：多处使用的组件应放在 `components/` 目录
+- **UI 组件隔离**：纯展示组件放在 `components/ui/` 目录
 
-#### 2.2.3 Code Style Standards
+#### 2.2.3 代码风格规范
 
-- **Use TypeScript**: All components and utility functions must use TypeScript
-- **Functional components**: Prioritize functional components and Hooks
-- **Props type definitions**: Use interface or type to define Props
-- **Import order**: Third-party libraries → Project internal modules → Type imports → Relative path imports
-
----
-
-## Part 3: AIRIOT Client Usage Guide
-
-> **Note**: All content in this section, including API descriptions, code examples, and configuration parameters, is strictly based on the official technical documentation in the project's **`docs`** directory, ensuring authoritativeness, accuracy, and timeliness.
-
-### 3.1 Core Modules Overview
-
-The `@airiot/client` provides the following core modules:
-
-| Module | Description | Main APIs |
-|--------|-------------|-----------|
-| **API Module** | RESTful API client | `createAPI`, `query`, `get`, `save`, `delete` |
-| **Auth Module** | User authentication and session management | `useLogin`, `useLogout`, `useUser`, `useUserReg` |
-| **Form Module** | JSON Schema dynamic forms | `SchemaForm`, `Form`, `FieldArray`, `useForm` |
-| **Model Module** | Jotai-based state management | `Model`, `TableModel`, `useModelList`, `useModelGet` |
-| **Page Hooks** | Page-level state management | `usePageVar`, `useDatasourceValue`, `useDataVarValue` |
-| **Subscribe** | WebSocket real-time data subscription | `Subscribe`, `useDataTag`, `useTableData` |
-| **Config** | Global configuration management | `setConfig`, `getConfig`, `getSettings` |
+- **使用 TypeScript**：所有组件和工具函数必须使用 TypeScript
+- **函数式组件**：优先使用函数式组件和 Hooks
+- **Props 类型定义**：使用 interface 或 type 定义 Props
+- **导入顺序**：第三方库 → 项目内部模块 → 类型导入 → 相对路径导入
 
 ---
 
-### 3.2 API Module
+## 第三部分：AIRIOT 客户端使用指南
 
-#### 3.2.1 Create API Instance
+> **编写说明**：本部分所有内容，包括 API 说明、代码示例、配置参数等，均严格依据项目 **`docs`** 目录下的官方技术文档编写，确保信息的权威性、准确性和时效性。
+
+### 3.1 核心模块概览
+
+`@airiot/client` 提供以下核心模块：
+
+| 模块 | 功能描述 | 主要 API |
+|------|---------|----------|
+| **API 模块** | RESTful API 客户端 | `createAPI`, `query`, `get`, `save`, `delete` |
+| **认证模块** | 用户认证和会话管理 | `useLogin`, `useLogout`, `useUser`, `useUserReg` |
+| **表单模块** | JSON Schema 动态表单 | `SchemaForm`, `Form`, `FieldArray`, `useForm` |
+| **模型模块** | 基于 Jotai 的状态管理 | `Model`, `TableModel`, `useModelList`, `useModelGet` |
+| **Page Hooks** | 页面级状态管理 | `usePageVar`, `useDatasourceValue`, `useDataVarValue` |
+| **数据订阅** | WebSocket 实时数据订阅 | `Subscribe`, `useDataTag`, `useTableData` |
+| **配置模块** | 全局配置管理 | `setConfig`, `getConfig`, `getSettings` |
+
+---
+
+### 3.2 API 模块
+
+#### 3.2.1 创建 API 实例
+
+使用 `createAPI` 创建 API 客户端实例：
 
 ```typescript
 import { createAPI } from '@airiot/client'
 
 const userApi = createAPI({
-  name: 'core/user',           // API name
-  resource: 'user',            // Resource path
-  headers: {},                 // Custom request headers
-  idProp: 'id',                // ID field name
-  convertItem: (item) => ({    // Data conversion function
+  name: 'core/user',           // API 名称
+  resource: 'user',            // 资源路径
+  headers: {},                 // 自定义请求头
+  idProp: 'id',                // ID 字段名
+  convertItem: (item) => ({    // 数据转换函数
     ...item,
     fullName: `${item.firstName} ${item.lastName}`
   })
 })
 ```
 
-#### 3.2.2 Query Data
+#### 3.2.2 查询数据
 
 ```typescript
-// Paginated query
+// 分页查询
 const { items, total } = await userApi.query(
-  { skip: 0, limit: 10 },                    // Query options
-  { status: { $eq: 'active' } }              // Where conditions
+  { skip: 0, limit: 10 },                    // 查询选项
+  { status: { $eq: 'active' } }              // Where 条件
 )
 
-// Sorted query
+// 排序查询
 const { items } = await userApi.query({
   skip: 0,
   limit: 20,
-  order: { createdAt: 'DESC' }              // Sort by creation time descending
+  order: { createdAt: 'DESC' }              // 按创建时间降序
 })
 
-// Custom query
+// 自定义查询
 const { items } = await userApi.query(
   { skip: 0, limit: 10 },
-  null,                                     // No where conditions
-  true,                                     // Return total count
-  (api) => api.fetch('/custom/endpoint')   // Custom query
+  null,                                     // 不使用 where 条件
+  true,                                     // 返回总数
+  (api) => api.fetch('/custom/endpoint')   // 自定义查询
 )
 ```
 
-#### 3.2.3 CRUD Operations
+#### 3.2.3 CRUD 操作
 
 ```typescript
-// Get single item
+// 获取单条数据
 const user = await userApi.get('user123')
 
-// Create data
+// 创建数据
 const newUser = await userApi.save({
   name: 'John Doe',
   email: 'john@example.com'
 })
 
-// Update data
+// 更新数据
 const updatedUser = await userApi.save('user123', {
   name: 'Jane Doe'
 })
 
-// Delete data
+// 删除数据
 await userApi.delete('user123')
 
-// Batch delete
+// 批量删除
 await userApi.delete(['id1', 'id2', 'id3'])
 
-// Count
+// 统计数量
 const count = await userApi.count({ status: { $eq: 'active' } })
 ```
 
 ---
 
-### 3.3 Authentication Module
+### 3.3 认证模块
 
-#### 3.3.1 User Login
+#### 3.3.1 用户登录
 
 ```typescript
 import { useLogin } from '@airiot/client'
@@ -228,21 +216,21 @@ function LoginForm() {
       await onLogin({
         username: 'admin',
         password: 'password123',
-        remember: true                    // Remember me
+        remember: true                    // 记住我
       })
-      console.log('Login successful')
+      console.log('登录成功')
     } catch (err) {
-      console.error('Login failed:', err)
+      console.error('登录失败:', err)
     }
   }
 
   return <button onClick={handleLogin} disabled={loading}>
-    {loading ? 'Logging in...' : 'Login'}
+    {loading ? '登录中...' : '登录'}
   </button>
 }
 ```
 
-#### 3.3.2 Get User Information
+#### 3.3.2 获取用户信息
 
 ```typescript
 import { useUser } from '@airiot/client'
@@ -251,22 +239,22 @@ function UserProfile() {
   const { user, loading, loadUser, logout } = useUser()
 
   useEffect(() => {
-    loadUser()  // Load user info from localStorage
+    loadUser()  // 从 localStorage 加载用户信息
   }, [])
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>加载中...</div>
 
   return (
     <div>
-      <p>Username: {user?.username}</p>
-      <p>Email: {user?.email}</p>
-      <button onClick={logout}>Logout</button>
+      <p>用户名: {user?.username}</p>
+      <p>邮箱: {user?.email}</p>
+      <button onClick={logout}>退出登录</button>
     </div>
   )
 }
 ```
 
-#### 3.3.3 User Registration
+#### 3.3.3 用户注册
 
 ```typescript
 import { useUserReg } from '@airiot/client'
@@ -282,17 +270,17 @@ function RegisterForm() {
     })
   }
 
-  return <button onClick={handleRegister}>Register</button>
+  return <button onClick={handleRegister}>注册</button>
 }
 ```
 
 ---
 
-### 3.4 Form Module
+### 3.4 表单模块
 
-#### 3.4.1 SchemaForm Component
+#### 3.4.1 SchemaForm 组件
 
-Define forms using JSON Schema:
+使用 JSON Schema 定义表单：
 
 ```typescript
 import { SchemaForm } from '@airiot/client'
@@ -302,16 +290,16 @@ const userSchema = {
   properties: {
     name: {
       type: 'string',
-      title: 'Name'
+      title: '姓名'
     },
     email: {
       type: 'string',
-      title: 'Email',
+      title: '邮箱',
       format: 'email'
     },
     age: {
       type: 'number',
-      title: 'Age',
+      title: '年龄',
       minimum: 0,
       maximum: 150
     }
@@ -321,7 +309,7 @@ const userSchema = {
 
 function UserForm() {
   const handleSubmit = (data: any) => {
-    console.log('Form data:', data)
+    console.log('表单数据:', data)
   }
 
   return (
@@ -333,30 +321,30 @@ function UserForm() {
 }
 ```
 
-#### 3.4.2 Custom Field Renderers
+#### 3.4.2 自定义字段渲染器
 
 ```typescript
 import { setFormFields } from '@airiot/client'
 import { CustomInput } from './CustomInput'
 
-// Register custom field
+// 注册自定义字段
 setFormFields({
   custom: CustomInput
 })
 
-// Use in Schema
+// 在 Schema 中使用
 const schema = {
   type: 'object',
   properties: {
     customField: {
-      type: 'custom',      // Use custom field
-      title: 'Custom Field'
+      type: 'custom',      // 使用自定义字段
+      title: '自定义字段'
     }
   }
 }
 ```
 
-#### 3.4.3 Array Fields
+#### 3.4.3 数组字段
 
 ```typescript
 import { FieldArray } from '@airiot/client'
@@ -369,7 +357,7 @@ function PhoneNumbersForm() {
         type: 'object',
         properties: {
           type: { type: 'string', enum: ['home', 'work', 'mobile'] },
-          number: { type: 'string', title: 'Number' }
+          number: { type: 'string', title: '号码' }
         }
       }}
     />
@@ -379,9 +367,11 @@ function PhoneNumbersForm() {
 
 ---
 
-### 3.5 Model Module
+### 3.5 模型模块
 
-#### 3.5.1 Model Component
+#### 3.5.1 Model 组件
+
+使用 Model 组件管理状态：
 
 ```typescript
 import { Model } from '@airiot/client'
@@ -425,9 +415,9 @@ function App() {
 }
 ```
 
-#### 3.5.2 TableModel Component
+#### 3.5.2 TableModel 组件
 
-Dynamic table model that fetches schema from server:
+动态表模型，从服务器获取表结构：
 
 ```typescript
 import { TableModel } from '@airiot/client'
@@ -436,7 +426,7 @@ function DynamicTable() {
   return (
     <TableModel
       tableId="device-table"
-      loadingComponent={<div>Loading...</div>}
+      loadingComponent={<div>加载中...</div>}
     >
       <DataGrid />
     </TableModel>
@@ -456,19 +446,19 @@ import {
 } from '@airiot/client'
 
 function UserManagement() {
-  // Get list data
+  // 获取列表数据
   const { items, loading, query } = useModelList()
 
-  // Get single item
+  // 获取单条数据
   const { data, get } = useModelGet()
 
-  // Save data
+  // 保存数据
   const { save, saving } = useModelSave()
 
-  // Delete data
+  // 删除数据
   const { remove } = useModelDelete()
 
-  // Count
+  // 统计数量
   const { count } = useModelCount()
 
   return <div>...</div>
@@ -479,7 +469,7 @@ function UserManagement() {
 
 ### 3.6 Page Hooks
 
-#### 3.6.1 Page Variable Management
+#### 3.6.1 页面变量管理
 
 ```typescript
 import {
@@ -494,17 +484,17 @@ function SettingsPage() {
 
   return (
     <div>
-      <p>Current theme: {theme}</p>
-      <p>Current language: {language}</p>
+      <p>当前主题: {theme}</p>
+      <p>当前语言: {language}</p>
       <button onClick={() => setTheme('dark')}>
-        Switch to dark theme
+        切换深色主题
       </button>
     </div>
   )
 }
 ```
 
-#### 3.6.2 Datasource Management
+#### 3.6.2 数据源管理
 
 ```typescript
 import { useDatasourceValue, useDatasetSet } from '@airiot/client'
@@ -514,7 +504,7 @@ function DataView() {
   const setDataset = useDatasetSet('users')
 
   useEffect(() => {
-    // Load data
+    // 加载数据
     fetchUsers().then(data => setDataset(data))
   }, [])
 
@@ -528,7 +518,7 @@ function DataView() {
 }
 ```
 
-#### 3.6.3 Component Context
+#### 3.6.3 组件上下文
 
 ```typescript
 import { useDataVarValue, useSetDataVar } from '@airiot/client'
@@ -551,11 +541,11 @@ function Chart() {
 
 ---
 
-### 3.7 Data Subscription Module
+### 3.7 数据订阅模块
 
 #### 3.7.1 Subscribe Provider
 
-Wrap Provider at application root:
+在应用根部包裹 Provider：
 
 ```typescript
 import { Subscribe } from '@airiot/client'
@@ -569,7 +559,7 @@ function App() {
 }
 ```
 
-#### 3.7.2 Auto-subscribe Data Tags
+#### 3.7.2 自动订阅数据点
 
 ```typescript
 import { useDataTag } from '@airiot/client'
@@ -583,14 +573,14 @@ function DeviceMonitor() {
 
   return (
     <div>
-      <p>Temperature: {temperature?.value}°C</p>
-      <p>Status: {temperature?.timeoutState?.isOffline ? 'Offline' : 'Online'}</p>
+      <p>温度: {temperature?.value}°C</p>
+      <p>状态: {temperature?.timeoutState?.isOffline ? '离线' : '在线'}</p>
     </div>
   )
 }
 ```
 
-#### 3.7.3 Manual Subscription Management
+#### 3.7.3 手动订阅管理
 
 ```typescript
 import { useSubscribeContext, useDataTagValue } from '@airiot/client'
@@ -604,17 +594,17 @@ function CustomMonitor() {
   })
 
   useEffect(() => {
-    // Manual subscription
+    // 手动订阅
     subscribeTags([
       { tableId: 'device-table', dataId: 'device-001', tagId: 'temperature' }
-    ], true)  // true = clear previous subscriptions
+    ], true)  // true = 清除之前的订阅
   }, [subscribeTags])
 
-  return <div>Temperature: {temperature?.value}°C</div>
+  return <div>温度: {temperature?.value}°C</div>
 }
 ```
 
-#### 3.7.4 Subscribe Table Data
+#### 3.7.4 订阅表数据
 
 ```typescript
 import { useTableData } from '@airiot/client'
@@ -626,31 +616,31 @@ function DeviceInfo() {
     tableId: 'device-table'
   })
 
-  return <div>Device name: {name}</div>
+  return <div>设备名称: {name}</div>
 }
 ```
 
 ---
 
-### 3.8 Configuration Module
+### 3.8 配置模块
 
-#### 3.8.1 Global Configuration
+#### 3.8.1 全局配置
 
 ```typescript
 import { setConfig, getConfig } from '@airiot/client'
 
-// Set global config
+// 设置全局配置
 setConfig({
   language: 'zh-CN',
   module: 'admin'
 })
 
-// Get config
+// 获取配置
 const config = getConfig()
 console.log(config.language)  // 'zh-CN'
 ```
 
-#### 3.8.2 Server Settings
+#### 3.8.2 服务器设置
 
 ```typescript
 import { getSettings } from '@airiot/client'
@@ -668,7 +658,7 @@ function SettingsLoader() {
 }
 ```
 
-#### 3.8.3 Message Notifications
+#### 3.8.3 消息提示
 
 ```typescript
 import { useMessage } from '@airiot/client'
@@ -678,17 +668,17 @@ function MessageExample() {
 
   return (
     <>
-      <button onClick={() => message.success('Operation successful')}>
-        Success message
+      <button onClick={() => message.success('操作成功')}>
+        成功消息
       </button>
-      <button onClick={() => message.error('Operation failed')}>
-        Error message
+      <button onClick={() => message.error('操作失败')}>
+        错误消息
       </button>
-      <button onClick={() => message.warning('Warning message')}>
-        Warning message
+      <button onClick={() => message.warning('警告信息')}>
+        警告消息
       </button>
-      <button onClick={() => message.info('Info message')}>
-        Info message
+      <button onClick={() => message.info('提示信息')}>
+        信息消息
       </button>
     </>
   )
@@ -697,9 +687,9 @@ function MessageExample() {
 
 ---
 
-### 3.9 Common Usage Patterns
+### 3.9 常见使用模式
 
-#### 3.9.1 Authenticated Route Protection
+#### 3.9.1 认证路由保护
 
 ```typescript
 import { useUser } from '@airiot/client'
@@ -707,13 +697,13 @@ import { useUser } from '@airiot/client'
 function ProtectedRoute({ children }) {
   const { user, loading } = useUser()
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>加载中...</div>
   if (!user) return <Navigate to="/login" />
 
   return children
 }
 
-// Usage
+// 使用
 function App() {
   return (
     <Routes>
@@ -731,7 +721,7 @@ function App() {
 }
 ```
 
-#### 3.9.2 Complete CRUD Example
+#### 3.9.2 CRUD 完整示例
 
 ```typescript
 import { createAPI } from '@airiot/client'
@@ -747,24 +737,24 @@ function UserManagement() {
   const { save, saving } = useModelSave()
   const { remove } = useModelDelete()
 
-  // Query user list
+  // 查询用户列表
   useEffect(() => {
     query()
   }, [])
 
-  // Create user
+  // 创建用户
   const handleCreate = async (data: any) => {
     await save(data)
-    query()  // Refresh list
+    query()  // 刷新列表
   }
 
-  // Delete user
+  // 删除用户
   const handleDelete = async (id: string) => {
     await remove(id)
-    query()  // Refresh list
+    query()  // 刷新列表
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>加载中...</div>
 
   return (
     <div>
@@ -775,7 +765,7 @@ function UserManagement() {
 }
 ```
 
-#### 3.9.3 Infinite Scroll
+#### 3.9.3 无限滚动
 
 ```typescript
 import { useModelList } from '@airiot/client'
@@ -797,7 +787,7 @@ function InfiniteList() {
       ))}
       {hasMore && (
         <button onClick={loadMore} disabled={loading}>
-          {loading ? 'Loading...' : 'Load more'}
+          {loading ? '加载中...' : '加载更多'}
         </button>
       )}
     </div>
@@ -807,9 +797,9 @@ function InfiniteList() {
 
 ---
 
-### 3.10 Best Practices
+### 3.10 最佳实践
 
-#### 3.10.1 Error Handling
+#### 3.10.1 错误处理
 
 ```typescript
 import { useLogin } from '@airiot/client'
@@ -820,10 +810,10 @@ function LoginForm() {
   const handleSubmit = async () => {
     try {
       await onLogin({ username, password })
-      // Success handling
+      // 成功处理
     } catch (err) {
-      console.error('Login failed:', err)
-      // Error handling
+      console.error('登录失败:', err)
+      // 错误处理
     }
   }
 
@@ -836,7 +826,7 @@ function LoginForm() {
 }
 ```
 
-#### 3.10.2 Performance Optimization
+#### 3.10.2 性能优化
 
 ```typescript
 import { useCallback, useMemo } from 'react'
@@ -845,16 +835,16 @@ import { useModelList } from '@airiot/client'
 function OptimizedList() {
   const { items } = useModelList()
 
-  // Use useMemo to cache computed results
+  // 使用 useMemo 缓存计算结果
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) =>
       a.name.localeCompare(b.name)
     )
   }, [items])
 
-  // Use useCallback to cache callback functions
+  // 使用 useCallback 缓存回调函数
   const handleClick = useCallback((id: string) => {
-    console.log('Clicked:', id)
+    console.log('点击:', id)
   }, [])
 
   return (
@@ -869,12 +859,12 @@ function OptimizedList() {
 }
 ```
 
-#### 3.10.3 TypeScript Type Safety
+#### 3.10.3 TypeScript 类型安全
 
 ```typescript
 import { createAPI } from '@airiot/client'
 
-// Define data type
+// 定义数据类型
 interface User {
   id: string
   name: string
@@ -882,7 +872,7 @@ interface User {
   createdAt: string
 }
 
-// Define API type
+// 定义 API 类型
 const userApi = createAPI<User>({
   name: 'core/user',
   resource: 'user',
@@ -892,71 +882,73 @@ const userApi = createAPI<User>({
   })
 })
 
-// Use with type hints
+// 使用时获得类型提示
 async function getUser() {
   const user = await userApi.get('id')
-  console.log(user?.name)  // TypeScript knows this is string type
+  console.log(user?.name)  // TypeScript 知道这是 string 类型
 }
 ```
 
 ---
 
-### 3.11 Troubleshooting
+### 3.11 故障排查
 
-#### Q: How to debug API requests?
+#### 3.11.1 常见问题
 
-A: Use `apiMessage: true` to enable API messages:
+**Q: 如何调试 API 请求？**
+
+A: 使用 `apiMessage: true` 启用 API 消息：
 
 ```typescript
 const api = createAPI({
   name: 'core/user',
   resource: 'user',
-  apiMessage: true  // Show API request messages
+  apiMessage: true  // 显示 API 请求消息
 })
 ```
 
-#### Q: Form validation not working?
+**Q: 表单验证不工作？**
 
-A: Ensure JSON Schema correctly defines `required` array and validation rules:
+A: 确保 JSON Schema 正确定义了 `required` 数组和验证规则：
 
 ```typescript
 const schema = {
   type: 'object',
-  required: ['name', 'email'],  // Required fields
+  required: ['name', 'email'],  // 必填字段
   properties: {
     email: {
       type: 'string',
-      format: 'email'  // Email format validation
+      format: 'email'  // 邮箱格式验证
     }
   }
 }
 ```
 
-#### Q: Model state not updating?
+**Q: Model 状态不更新？**
 
-A: Ensure hooks are used inside Model Provider:
+A: 确保在 Model Provider 内部使用 hooks：
 
 ```typescript
 function MyComponent() {
   return (
     <Model model={userModel}>
-      <UserList />  {/* Correct: inside Provider */}
+      <UserList />  {/* 正确：在 Provider 内部 */}
     </Model>
   )
 }
 
-// Wrong: cannot use useModel hooks outside Provider
+// 错误：不能在 Provider 外部使用 useModel hooks
 ```
 
-#### Q: Data subscription not updating?
+**Q: 数据订阅不更新？**
 
-A: Ensure inside Subscribe Provider:
+A: 确保在 Subscribe Provider 内部：
 
 ```typescript
 function App() {
   return (
     <Subscribe>
-      <DeviceMonitor />  {/* Correct */}
+      <DeviceMonitor />  {/* 正确 */}
     </Subscribe>
   )
 }
@@ -964,24 +956,24 @@ function App() {
 
 ---
 
-### 3.12 Related Documentation
+### 3.12 相关文档
 
-For complete API documentation and examples, refer to:
+完整的 API 文档和示例请参考：
 
-- [API Module](./api.md) - API module details
-- [Auth Module](./auth.md) - Authentication guide
-- [Form Module](./form.md) - Form module
-- [Model Module](./model.md) - State management
-- [Page Hooks](./page-hooks.md) - Page-level hooks
-- [Subscribe](./subscribe.md) - Real-time subscriptions
-- [Getting Started](./getting-started.md) - Quick start guide
-- [Examples](./examples.md) - Usage examples
+- [API 模块文档](./api.md)
+- [认证模块文档](./auth.md)
+- [表单模块文档](./form.md)
+- [模型模块文档](./model.md)
+- [Page Hooks 文档](./page-hooks.md)
+- [数据订阅文档](./subscribe.md)
+- [快速开始指南](./getting-started.md)
+- [使用示例](./examples.md)
 
 ---
 
-## Appendix
+## 附录
 
-### A. Complete Dependency List
+### A. 完整依赖列表
 
 ```json
 {
@@ -995,7 +987,7 @@ For complete API documentation and examples, refer to:
 }
 ```
 
-### B. TypeScript Configuration
+### B. TypeScript 配置
 
 ```json
 {
@@ -1021,21 +1013,21 @@ For complete API documentation and examples, refer to:
 }
 ```
 
-### C. Environment Variables Reference
+### C. 环境变量参考
 
 ```bash
 # .env.local
 
-# AIRIOT API Configuration
+# AIRIOT API 配置
 AIRIOT_API_TARGET=http://localhost:8080/
 AIRIOT_API_PORT=3000
 
-# Development Mode
+# 开发模式
 VITE_DEV=true
 ```
 
 ---
 
-**Document Version**: v1.0.0
-**Last Updated**: 2025-01-24
-**Maintained By**: AIRIOT Development Team
+**文档版本：** v1.0
+**最后更新：** 2025-01-24
+**维护者：** AIRIOT 开发团队

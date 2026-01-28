@@ -22,16 +22,9 @@ Complete guide for AI Agents to correctly and efficiently develop with the AIRIO
 
 AIRIOT frontend projects are built on **shadcn/ui framework** with **Vite** build tool.
 
-### 1.2 Project Creation Command
+### 1.2 Project Creation
 
-```bash
-npx shadcn@latest create --preset "radix-mira" --template vite airiot-project
-```
-
-**Core Configuration Parameters:**
-- `--preset "radix-mira"`: Use Radix Mira design style preset
-- `--template vite`: Vite-based build tool template
-- `airiot-project`: Project name (can be modified as needed)
+创建一个Airiot项目请严格遵照 ./vite.md 这个文档创建。
 
 ### 1.3 Core Dependencies & Services
 

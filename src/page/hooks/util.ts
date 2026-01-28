@@ -37,5 +37,5 @@ export function createCallback<T extends object>(atomState: AtomState<T>, option
 }
 
 export function usePageStore() {
-  return useContext(PageStoreContext).store
+  return useContext(PageStoreContext)?.store
 }

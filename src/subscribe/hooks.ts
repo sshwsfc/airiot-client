@@ -6,6 +6,7 @@ import type { TagOptions, DataPropOptions, SubTag, SubData, TagValue } from './t
 import { dataPropSelector, tagsState, tagsMetaState, referenceState, tagsTimeoutSelector } from './atoms'
 import { SubscribeContext } from './Store'
 import { useCellDataValue } from '../page/hooks/context'
+import { usePageStore } from '../page/hooks/util'
 
 // ============================================================================
 // Context Hooks
@@ -14,7 +15,7 @@ import { useCellDataValue } from '../page/hooks/context'
 export function useSubscribeContext() {
   const context = React.useContext(SubscribeContext)
   if (!context) {
-    throw new Error('useSubscribeContext must be used within Store provider')
+    throw new Error('useSubscribeContext must be used within Subscribe provider')
   }
   return context
 }
@@ -23,9 +24,8 @@ export function useSubscribeContext() {
 // Tag Hooks
 // ============================================================================
 export function useDataTagValue(options: TagOptions) {
-  const { store } = useSubscribeContext()
   const { tableId, dataId, tagId } = options
-  return useAtomValue(tagsState(`${tableId}|${dataId}|${tagId}`), { store })
+  return useAtomValue(tagsState(`${tableId}|${dataId}|${tagId}`), { store: usePageStore() })
 }
 
 export function useDataTag(options: TagOptions) {
@@ -53,7 +53,6 @@ export function useDataTag(options: TagOptions) {
 }
 
 export function useUpdateTags() {
-  const { store } = useSubscribeContext()
   return useAtomCallback(React.useCallback((get, set, newValue: Record<string, TagValue> | null | undefined) => {
       if (newValue && _.isPlainObject(newValue)) {
         Object.keys(newValue).forEach((id: string) => {
@@ -62,7 +61,7 @@ export function useUpdateTags() {
           set(tagsState(id), { ...(prevValue || {}), ...value })
         })
       }
-    }, []), { store })
+    }, []), { store: usePageStore() })
 }
 
 // ============================================================================
@@ -99,12 +98,10 @@ export function useTableData(options: DataPropOptions) {
 }
 
 export function useTableDataValue(options: DataPropOptions) {
-  const { store } = useSubscribeContext()
-  return useAtomValue(dataPropSelector(options), { store })
+  return useAtomValue(dataPropSelector(options), { store: usePageStore() })
 }
 
 export function useUpdateData() {
-  const { store } = useSubscribeContext()
   return useAtomCallback(React.useCallback((get, set, newValue: Record<string, any> | null | undefined) => {
       if (newValue && _.isPlainObject(newValue)) {
         Object.keys(newValue).forEach((dataId: string) => {
@@ -113,7 +110,7 @@ export function useUpdateData() {
           set(tagsMetaState(dataId), { ...(prevValue || {}), ...value })
         })
       }
-    }, []), { store })
+    }, []), { store: usePageStore() })
 }
 
 // ============================================================================
@@ -121,8 +118,7 @@ export function useUpdateData() {
 // ============================================================================
 
 export function useUpdateTagsTimeout() {
-  const { store } = useSubscribeContext()
-  return useSetAtom(tagsTimeoutSelector, { store })
+  return useSetAtom(tagsTimeoutSelector, { store: usePageStore() })
 }
 
 // ============================================================================
@@ -130,17 +126,15 @@ export function useUpdateTagsTimeout() {
 // ============================================================================
 
 export function useReferenceValue(tableId: string, tableDataId: string, field: string) {
-  const { store } = useSubscribeContext()
-  return useAtomValue(referenceState(`${tableId}#%${tableDataId}#%${field}`), { store })
+  return useAtomValue(referenceState(`${tableId}#%${tableDataId}#%${field}`), { store: usePageStore() })
 }
 
 export function useUpdateReference() {
-  const { store } = useSubscribeContext()
   return useAtomCallback(React.useCallback((_get, set, newValue: any) => {
       if (newValue?.tableId && newValue?.tableDataId && newValue?.field) {
         const id = newValue.tableId + '#%' + newValue.tableDataId + '#%' + newValue.field
         set(referenceState(id), newValue.value || 'computing')
       }
-    }, []), { store })
+    }, []), { store: usePageStore() })
 }
 
