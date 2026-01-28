@@ -3,11 +3,13 @@ export {
 } from './Store'
 
 export {
-  useDataTag,
+  useTag,
   useTableData,
 
-  useDataTagValue,
-  useTableDataValue
+  useTagValue,
+  useTableDataValue,
+
+  useSubscribeContext
 } from './hooks'
 
 export * from './queries'

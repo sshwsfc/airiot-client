@@ -2,11 +2,11 @@ import _ from 'lodash'
 import React from 'react'
 import api from '../api'
 
-import { queryLastData } from './queries'
+import { queryLastData, queryMeta } from './queries'
 import worker from './worker'
 import type { SubTag, SubData } from './types'
 
-import { useUpdateTagsTimeout, useUpdateTags, useUpdateReference, useUpdateData } from './hooks'
+import { useUpdateTagsTimeout, useUpdateTags, useUpdateReference, useUpdateData, useUpdateMeta } from './hooks'
 import { useWS } from './ws'
 
 declare function use(key: string, ...args: any[]): any
@@ -20,6 +20,7 @@ function useWarningWs(options?: { recoveryStatus: string }) {
 }
 
 const performance = true
+const debounceTime = 100
 
 export const useDataTagSubscribe = () => {
   const subscribedTagsRef = React.useRef<SubTag[]>([])
@@ -28,6 +29,7 @@ export const useDataTagSubscribe = () => {
   const warehouse = React.useRef<Record<string, any>>({})
 
   const updateTags = useUpdateTags()
+  const updateMeta = useUpdateMeta()
 
   const { subscribe, onData } = useWS()
 
@@ -35,7 +37,7 @@ export const useDataTagSubscribe = () => {
     _.debounce((data: Record<string, any>) => {
       updateTags(data)
       warehouse.current = {}
-    }, 500, { 'maxWait': 1000 }),
+    }, debounceTime, { 'maxWait': 1000 }),
     [updateTags]
   )
 
@@ -68,16 +70,24 @@ export const useDataTagSubscribe = () => {
         unsubscribe.current()
       }
       if (subTags.length > 0) {
-        unsubscribe.current = subscribe('data', subTags)
+        unsubscribe.current = subscribe('data', subTags.map(tag => ({ tableId: tag.tableId, id: tag.dataId, tagId: tag.tagId })))
       }
-    }, 500),
+    }, debounceTime),
     []
+  )
+  const debouncedQueryLastData = React.useCallback(
+    _.debounce(queryLastData, debounceTime),
+    [queryLastData]
   )
 
   // Query initial data and subscribe
   const subscribeTags = React.useCallback((subTags: SubTag[]) => {
     if (subTags && subTags.length > 0) {
-      queryLastData(subTags, updateTags)
+      debouncedQueryLastData(subTags, (value) => {
+        // reconnect()
+        queryMeta(subTags, updateMeta)
+        value && updateTags(value)
+      })
       debouncedSubscribe(subTags)
     }
   }, [])
@@ -125,7 +135,7 @@ export const useTableDataSubscribe = () => {
     _.debounce((data: Record<string, any>) => {
       updateData(data)
       warehouseNode.current = {}
-    }, 500, { 'maxWait': 1000 }),
+    }, debounceTime, { 'maxWait': 1000 }),
     [updateData]
   )
 
@@ -149,9 +159,9 @@ export const useTableDataSubscribe = () => {
         unsubscribe.current()
       }
       if (subDataIds.length > 0) {
-        unsubscribe.current = subscribeNode('tabledata', subDataIds)
+        unsubscribe.current = subscribeNode('tabledata', subDataIds.map(data => ({ tableId: data.tableId, id: data.dataId, fields: data.fields })))
       }
-    }, 500),
+    }, debounceTime),
     []
   )
 

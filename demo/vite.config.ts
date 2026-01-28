@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '')
+  const targetHost = env.AIRIOT_API_TARGET || ''
 
   return {
     plugins: [react(), tailwindcss()],
@@ -15,13 +16,18 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    server: env.AIRIOT_API_TARGET ? {
+    server: targetHost ? {
       port: env.AIRIOT_API_PORT || 3000,
       proxy: {
         '/rest': {
-          target: env.AIRIOT_API_TARGET,
+          target: targetHost,
           changeOrigin: true,
           secure: false
+        },
+        '/ws': {
+          ws: true,
+          target: targetHost,
+          changeOrigin: true
         }
       }
     } : undefined

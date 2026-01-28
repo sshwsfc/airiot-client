@@ -6,7 +6,7 @@ import App from './App.tsx'
 
 const { loadUser } = useUser()
 setConfig({
-  projectId: 'ctask'
+  projectId: 'kesi'
 })
 loadUser()
 

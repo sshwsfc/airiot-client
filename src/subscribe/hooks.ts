@@ -3,7 +3,7 @@ import { useAtomCallback } from 'jotai/utils'
 import React from 'react'
 import _ from 'lodash'
 import type { TagOptions, DataPropOptions, SubTag, SubData, TagValue } from './types'
-import { dataPropSelector, tagsState, tagsMetaState, referenceState, tagsTimeoutSelector } from './atoms'
+import { dataPropSelector, tagsState, dataState, referenceState, tagsTimeoutSelector } from './atoms'
 import { SubscribeContext } from './Store'
 import { useCellDataValue } from '../page/hooks/context'
 import { usePageStore } from '../page/hooks/util'
@@ -23,12 +23,12 @@ export function useSubscribeContext() {
 // ============================================================================
 // Tag Hooks
 // ============================================================================
-export function useDataTagValue(options: TagOptions) {
+export function useTagValue(options: TagOptions) {
   const { tableId, dataId, tagId } = options
   return useAtomValue(tagsState(`${tableId}|${dataId}|${tagId}`), { store: usePageStore() })
 }
 
-export function useDataTag(options: TagOptions) {
+export function useTag(options: TagOptions) {
   const { subscribeTags } = useSubscribeContext()
   const tableDataContext = useCellDataValue()?.tableData
 
@@ -49,7 +49,7 @@ export function useDataTag(options: TagOptions) {
     }
   }, [dataId, tableId, tagId, subscribeTags])
 
-  return useDataTagValue({ tableId, dataId, tagId })
+  return useTagValue({ tableId, dataId, tagId })
 }
 
 export function useUpdateTags() {
@@ -59,6 +59,18 @@ export function useUpdateTags() {
           const value = newValue[id]
           const prevValue = get(tagsState(id))
           set(tagsState(id), { ...(prevValue || {}), ...value })
+        })
+      }
+    }, []), { store: usePageStore() })
+}
+
+export function useUpdateMeta() {
+  return useAtomCallback(React.useCallback((get, set, newValue: Record<string, any> | null | undefined) => {
+      if (newValue && _.isPlainObject(newValue)) {
+        Object.keys(newValue).forEach((id: string) => {
+          const value = newValue[id]
+          const prevValue = get(tagsState(id))
+          set(tagsState(id), { ...(prevValue || {}), meta: value })
         })
       }
     }, []), { store: usePageStore() })
@@ -106,8 +118,8 @@ export function useUpdateData() {
       if (newValue && _.isPlainObject(newValue)) {
         Object.keys(newValue).forEach((dataId: string) => {
           const value = newValue[dataId]
-          const prevValue = get(tagsMetaState(dataId))
-          set(tagsMetaState(dataId), { ...(prevValue || {}), ...value })
+          const prevValue = get(dataState(dataId))
+          set(dataState(dataId), { ...(prevValue || {}), ...value })
         })
       }
     }, []), { store: usePageStore() })

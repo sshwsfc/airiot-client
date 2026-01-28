@@ -14,6 +14,7 @@ import ConfigDemoPage from './pages/ConfigDemoPage'
 import HelloWorldPage from './pages/HelloWorldPage'
 import PageHooksDemoPage from './pages/PageHooksDemoPage'
 import SubscribeDemoPage from './pages/SubscribeDemoPage'
+import TableDataSubscribeDemoPage from './pages/TableDataSubscribeDemoPage'
 
 function App() {
   const navigationItems = [
@@ -27,7 +28,8 @@ function App() {
     { path: '/builtin-models', label: '内置模型', icon: Activity },
     { path: '/config', label: '全局配置', icon: Settings },
     { path: '/page-hooks', label: '画面Hooks', icon: Activity },
-    { path: '/subscribe', label: '数据订阅', icon: Activity }
+    { path: '/subscribe', label: '数据点订阅', icon: Activity },
+    { path: '/table-data-subscribe', label: '表数据订阅', icon: Database }
   ]
 
   return (
@@ -117,7 +119,11 @@ function App() {
                 </li>
                 <li className="flex items-start space-x-2">
                   <Activity className="h-4 w-4 mt-0.5 text-primary" />
-                  <span>数据订阅 - 实时 WebSocket 数据推送</span>
+                  <span>数据点订阅 - 实时 WebSocket 数据点推送</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Database className="h-4 w-4 mt-0.5 text-primary" />
+                  <span>表数据订阅 - 实时表数据字段推送</span>
                 </li>
               </ul>
             </div>
@@ -137,6 +143,7 @@ function App() {
               <Route path="/config" element={<ConfigDemoPage />} />
               <Route path="/page-hooks" element={<PageHooksDemoPage />} />
               <Route path="/subscribe" element={<SubscribeDemoPage />} />
+              <Route path="/table-data-subscribe" element={<TableDataSubscribeDemoPage />} />
             </Routes>
           </main>
         </div>

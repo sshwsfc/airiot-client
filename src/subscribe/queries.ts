@@ -62,12 +62,11 @@ const queryMeta = async (subTags: SubTag[], callback?: (res: any) => void): Prom
         if (!tableid) return
         Object.keys(node).forEach(nodeid => {
           const tags: TagItem[] = node[nodeid]
-          res[`${tableid}|${nodeid}`] = tags.reduce<Record<string, TagItem>>((p, c: TagItem) => {
-            if (c.id) {
-              return { ...p, [c.id]: c }
+          tags.forEach((tag: TagItem) => {
+            if(tag.id) {
+              res[`${tableid}|${nodeid}|${tag.id}`] = tag
             }
-            return p
-          }, {})
+          })
         })
       })
     }
@@ -76,7 +75,11 @@ const queryMeta = async (subTags: SubTag[], callback?: (res: any) => void): Prom
 }
 
 const queryLastData = (where: any[], callback?: (res: any) => void): void => {
-  const filterwhere = where?.filter((f: SubTag) => f?.dataId)
+  const filterwhere = where?.filter((f: SubTag) => f?.dataId).map((f: SubTag) => ({
+    tableId: f.tableId,
+    id: f.dataId,
+    tagId: f.tagId
+  }))
   api({ name: 'core/data' })
     .fetch('/latest', {
       method: 'POST',

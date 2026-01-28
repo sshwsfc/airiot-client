@@ -9,7 +9,6 @@ import type { DataPropOptions, TagValue } from './types'
 
 // Tags subscription atoms
 export const tagsState = atomFamily(() => atom<TagValue>({}))
-export const tagsMetaState = atomFamily(() => atom<any>({}))
 // Reference/Compute atoms
 export const referenceState = atomFamily(() => atom<Record<string, any>>({}))
 export const dataState = atomFamily(() => atom<any>({}))
@@ -38,8 +37,7 @@ export const dataPropSelector = atomFamily((op: DataPropOptions) => atom(
     const field = op.field
 
     let value: any
-
-    if (op.type == 'schema') {
+    if (!op.type || op.type == 'schema') {
       value = field == '' ? data : (field ? _.get(data, field) : undefined)
       if (op.config == '关联字段') {
         const relateShowField = op.relateShowField

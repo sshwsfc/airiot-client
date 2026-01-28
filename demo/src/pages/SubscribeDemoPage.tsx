@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Activity, Database, WifiOff, AlertTriangle, CheckCircle, Zap } from 'lucide-react'
-import { Subscribe, useDataTag } from '@airiot/client' // 假设从 @airiot/client 导入实际的 Subscribe 组件和 hooks
+import { Subscribe, useTag, useSubscribeContext } from '@airiot/client' // 假设从 @airiot/client 导入实际的 Subscribe 组件和 hooks
 
 // ============================================================================
 // 类型定义
@@ -17,40 +17,9 @@ interface SubTag {
   tagId?: string
 }
 
-interface TagValue {
-  value?: any
-  time?: any
-  warningState?: any
-  timeoutState?: any
-  [key: string]: any
-}
-
-interface SubscribeContextValue {
-  subscribeTags: (tags: SubTag[], clear?: boolean) => void
-  subscribeData: (dataIds: any[], clear?: boolean) => void
-}
-
-// ============================================================================
-// 模拟 Subscribe Context
-// ============================================================================
-
-const SubscribeContext = createContext<SubscribeContextValue | null>(null)
-
-// ============================================================================
-// 模拟的 Hooks（实际项目中从 @airiot/client 导入）
-// ============================================================================
-
-function useSubscribeContext(): SubscribeContextValue {
-  const context = useContext(SubscribeContext)
-  if (!context) {
-    throw new Error('useSubscribeContext must be used within Subscribe Provider')
-  }
-  return context
-}
-
 // 数据点显示组件
 function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: string; dataId: string }) {
-  const tagValue = useDataTag({ tableId, dataId, tagId })
+  const tagValue = useTag({ tableId, dataId, tagId })
 
   if (!tagValue) {
     return (
@@ -60,7 +29,7 @@ function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: 
     )
   }
 
-  const { value, time, timeoutState, warningState } = tagValue
+  const { value, time, timeoutState, warningState, meta } = tagValue
 
   return (
     <div className="p-4 bg-card border rounded-md space-y-2">
@@ -89,6 +58,7 @@ function DataPointDisplay({ tagId, tableId, dataId }: { tagId: string; tableId: 
       </div>
       <div className="text-2xl font-bold">
         {typeof value === 'number' ? value.toFixed(1) : value}
+        <span className="text-sm font-normal ml-1">{meta?.unit || ''}</span>
       </div>
       <div className="text-xs text-muted-foreground">
         {new Date(time).toLocaleString('zh-CN')}
@@ -109,33 +79,33 @@ function AutoSubscribeDemo() {
     <Card>
       <CardHeader>
         <CardTitle>自动订阅演示</CardTitle>
-        <CardDescription>使用 useDataTag 自动订阅数据点</CardDescription>
+        <CardDescription>使用 useTag 自动订阅数据点</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
           <Zap className="h-4 w-4" />
           <AlertDescription>
-            <strong>useDataTag</strong> 会自动订阅数据点，无需手动管理订阅。
+            <strong>useTag</strong> 会自动订阅数据点，无需手动管理订阅。
             只需传入 <code>tableId</code>、<code>dataId</code> 和 <code>tagId</code> 即可。
           </AlertDescription>
         </Alert>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <DataPointDisplay tagId="temperature" tableId="device-table" dataId="device-001" />
-          <DataPointDisplay tagId="humidity" tableId="device-table" dataId="device-001" />
-          <DataPointDisplay tagId="pressure" tableId="device-table" dataId="device-001" />
+          <DataPointDisplay tagId="WD" tableId="device" dataId="D1" />
+          <DataPointDisplay tagId="YL" tableId="device" dataId="D1" />
+          <DataPointDisplay tagId="WD" tableId="device" dataId="D2" />
         </div>
 
         <div className="p-4 bg-muted rounded-md">
           <p className="text-sm font-medium mb-2">代码示例：</p>
           <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
-{`import { useDataTag } from '@airiot/client'
+{`import { useTag } from '@airiot/client'
 
 function DeviceMonitor() {
-  const temperature = useDataTag({
-    tableId: 'device-table',
-    dataId: 'device-001',
-    tagId: 'temperature'
+  const temperature = useTag({
+    tableId: 'device',
+    dataId: 'D1',
+    tagId: 'WD'
   })
 
   return <div>温度: {temperature?.value}°C</div>
@@ -165,8 +135,8 @@ function ManualSubscribeDemo() {
   useEffect(() => {
     if (subscriptions.length > 0) {
       const tags: SubTag[] = subscriptions.map(tagId => ({
-        tableId: 'device-table',
-        dataId: 'device-001',
+        tableId: 'device',
+        dataId: 'D1',
         tagId
       }))
       subscribeTags(tags, true)
@@ -187,7 +157,7 @@ function ManualSubscribeDemo() {
           <Database className="h-4 w-4" />
           <AlertDescription>
             使用 <strong>useSubscribeContext</strong> 获取订阅管理方法，
-            配合 <strong>useDataTagValue</strong>（只读，不自动订阅）实现精细控制。
+            配合 <strong>useTagValue</strong>（只读，不自动订阅）实现精细控制。
           </AlertDescription>
         </Alert>
 
@@ -248,9 +218,9 @@ function CustomMonitor() {
 // 多设备监控演示
 function MultiDeviceMonitorDemo() {
   const devices = [
-    { id: 'device-001', name: '温度传感器 1', location: '车间 A' },
-    { id: 'device-002', name: '压力传感器 2', location: '车间 B' },
-    { id: 'device-003', name: '流量计 3', location: '管道 C' }
+    { id: 'D1', name: '温度传感器 1', location: '车间 A' },
+    { id: 'D2', name: '压力传感器 2', location: '车间 B' },
+    { id: 'D3', name: '流量计 3', location: '管道 C' }
   ]
 
   return (
@@ -268,7 +238,7 @@ function MultiDeviceMonitorDemo() {
                 <p className="text-sm text-muted-foreground">{device.location}</p>
               </div>
               <div className="space-y-2">
-                <DataPointDisplay tagId="temperature" tableId="device-table" dataId={device.id} />
+                <DataPointDisplay tagId="temperature" tableId="device" dataId={device.id} />
               </div>
             </div>
           ))}
@@ -277,7 +247,7 @@ function MultiDeviceMonitorDemo() {
         <Alert>
           <Database className="h-4 w-4" />
           <AlertDescription>
-            每个设备使用独立的 <code>useDataTag</code> hook，自动管理各自的订阅。
+            每个设备使用独立的 <code>useTag</code> hook，自动管理各自的订阅。
             所有订阅共享同一个 WebSocket 连接，自动批量更新，性能优化。
           </AlertDescription>
         </Alert>
@@ -299,22 +269,22 @@ function ApiUsageDemo() {
       <CardContent className="space-y-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="auto">useDataTag (自动)</TabsTrigger>
+            <TabsTrigger value="auto">useTag (自动)</TabsTrigger>
             <TabsTrigger value="manual">手动管理</TabsTrigger>
           </TabsList>
 
           <TabsContent value="auto" className="mt-4">
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">useDataTag - 推荐使用</h4>
+                <h4 className="font-semibold mb-2">useTag - 推荐使用</h4>
                 <p className="text-sm text-muted-foreground mb-2">自动订阅，最简单的方式</p>
                 <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
-{`import { useDataTag } from '@airiot/client'
+{`import { useTag } from '@airiot/client'
 
 function TemperatureDisplay() {
-  const temperature = useDataTag({
-    tableId: 'device-table',
-    dataId: 'device-001',
+  const temperature = useTag({
+    tableId: 'device',
+    dataId: 'D1',
     tagId: 'temperature'
   })
 
@@ -339,11 +309,11 @@ function TemperatureDisplay() {
                 <h4 className="font-semibold mb-2">手动订阅 - 高级用法</h4>
                 <p className="text-sm text-muted-foreground mb-2">适合需要精细控制的场景</p>
                 <pre className="p-4 bg-muted rounded-md text-xs overflow-x-auto">
-{`import { useSubscribeContext, useDataTagValue } from '@airiot/client'
+{`import { useSubscribeContext, useTagValue } from '@airiot/client'
 
 function CustomMonitor() {
   const { subscribeTags } = useSubscribeContext()
-  const value = useDataTagValue({ tableId: '...', dataId: '...', tagId: '...' })
+  const value = useTagValue({ tableId: '...', dataId: '...', tagId: '...' })
 
   useEffect(() => {
     subscribeTags([{ tableId: '...', dataId: '...', tagId: '...' }], true)
@@ -371,7 +341,7 @@ function CustomMonitor() {
 
 // 实际应用场景
 function RealWorldExample() {
-  const [selectedDevice, setSelectedDevice] = useState('device-001')
+  const [selectedDevice, setSelectedDevice] = useState('D1')
 
   return (
     <Card>
@@ -382,16 +352,16 @@ function RealWorldExample() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 mb-4">
           <Button
-            variant={selectedDevice === 'device-001' ? 'default' : 'outline'}
+            variant={selectedDevice === 'D1' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setSelectedDevice('device-001')}
+            onClick={() => setSelectedDevice('D1')}
           >
             设备 1
           </Button>
           <Button
-            variant={selectedDevice === 'device-002' ? 'default' : 'outline'}
+            variant={selectedDevice === 'D2' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setSelectedDevice('device-002')}
+            onClick={() => setSelectedDevice('D2')}
           >
             设备 2
           </Button>
@@ -407,11 +377,11 @@ function RealWorldExample() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-card border rounded-md">
             <h4 className="font-semibold mb-2">温度监控</h4>
-            <DataPointDisplay tagId="temperature" tableId="device-table" dataId={selectedDevice} />
+            <DataPointDisplay tagId="WD" tableId="device" dataId={selectedDevice} />
           </div>
           <div className="p-4 bg-card border rounded-md">
             <h4 className="font-semibold mb-2">压力监控</h4>
-            <DataPointDisplay tagId="pressure" tableId="device-table" dataId={selectedDevice} />
+            <DataPointDisplay tagId="YL" tableId="device" dataId={selectedDevice} />
           </div>
         </div>
 
@@ -420,7 +390,7 @@ function RealWorldExample() {
           <AlertDescription>
             <strong>关键特性：</strong>
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-              <li>切换设备时，useDataTag 会自动订阅新设备的数据点</li>
+              <li>切换设备时，useTag 会自动订阅新设备的数据点</li>
               <li>旧设备的订阅会自动清理，避免内存泄漏</li>
               <li>所有数据实时更新，每3秒模拟一次数据变化</li>
             </ul>

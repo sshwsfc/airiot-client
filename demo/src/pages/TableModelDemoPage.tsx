@@ -38,7 +38,7 @@ function TableModelContent() {
   }
 
   const handleSave = (item: any) => {
-    saveItem(item, {})
+    saveItem(item)
     setEditingItem(null)
     alert('保存成功！')
   }
@@ -73,7 +73,7 @@ function TableModelContent() {
             type="text"
             placeholder="搜索名称..."
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
             className="w-48"
           />
           <Button variant="outline" onClick={handleFilter}>
@@ -108,7 +108,7 @@ function TableModelContent() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item, index) => (
+            {items.map((item: any, index: number) => (
               <TableRow key={item.id || index}>
                 {listFields.map((field: string) => {
                   const value = item[field]
@@ -278,7 +278,7 @@ function TableModelContent() {
                           <Input
                             type="number"
                             value={value || ''}
-                            onChange={(e) => setEditingItem({
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingItem({
                               ...editingItem,
                               [fieldKey]: Number(e.target.value)
                             })}
@@ -289,7 +289,7 @@ function TableModelContent() {
                           <Input
                             type="text"
                             value={value || ''}
-                            onChange={(e) => setEditingItem({
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingItem({
                               ...editingItem,
                               [fieldKey]: e.target.value
                             })}
@@ -330,7 +330,7 @@ function TableModelContent() {
             <br />
             <strong>TableModel:</strong> - 动态模型组件，从服务器获取表结构
             <br />
-            <strong>tableId:</strong> - task_def（表结构 ID）
+            <strong>tableId:</strong> - data（表结构 ID）
             <br />
             <strong>API 端点:</strong> - core/t/schema/{'{tableId}'} 获取表结构
             <br />
@@ -349,7 +349,7 @@ function TableModelContent() {
 export default function TableModelDemoPage() {
   return (
     <TableModel
-      tableId="task_def"
+      tableId="data"
       loadingComponent={
         <Card>
           <CardContent className="py-12">

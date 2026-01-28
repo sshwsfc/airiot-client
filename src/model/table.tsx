@@ -9,7 +9,7 @@ interface State {
   loading: boolean
 }
 
-const TableModel: React.FC<{ tableId: string, loadingComponent: React.ReactNode | undefined, initQuery: any | undefined, children: React.ReactNode }> = ({ tableId, loadingComponent, initQuery, children, ...props }) => {
+const TableModel = ({ tableId, loadingComponent, initQuery, children, ...props }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, children?: React.ReactNode }) => {
 
   const [{ schema, tags, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
   // Fetch table schema and tags
@@ -117,7 +117,7 @@ const TableModel: React.FC<{ tableId: string, loadingComponent: React.ReactNode 
     }
   }, [tableId])
 
-  return (loading || schema == null) ? (loadingComponent || null) : <Model schema={schema} {...props}>{children}</Model>
+  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema} {...props}>{children}</Model>
 }
 
 export {
