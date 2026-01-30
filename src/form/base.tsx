@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react'
-import { Form as RForm, useForm as rUseForm } from 'react-final-form'
-import arrayMutators from 'final-form-arrays'
-import Ajv from 'ajv'
+import React, { useEffect, useCallback, useMemo } from 'react'
+import { useForm as useRHFForm, FormProvider, useFormContext } from 'react-hook-form'
+import { z } from 'zod'
 
 import cloneDeep from 'lodash/cloneDeep'
 import isArray from 'lodash/isArray'
@@ -10,34 +9,15 @@ import isFunction from 'lodash/isFunction'
 import isNil from 'lodash/isNil'
 import isNumber from 'lodash/isNumber'
 import isPlainObject from 'lodash/isPlainObject'
-import set from 'lodash/set'
 import some from 'lodash/some'
 
-import ajvLocalize from './locales/index'
-import { convert as schemaConvert, FormField } from './schema'
+import { schemaConvert, FormField } from './schema'
 import { findFieldByName } from './utils'
 import { fieldBuilder, objectBuilder } from './builder'
 
-const datetimeRegex = /^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\s+(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/
-const ajv = new Ajv({
-  allErrors: true,
-  verbose: true,
-  strictSchema: false,
-  formats: { datetime: datetimeRegex }
-})
-
-// i18n support - removed xadmin-i18n dependency
-const t = (key: string, params?: Record<string, any>): string => {
-  // Simple placeholder replacement
-  return key.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
-    return params?.[paramKey] !== undefined ? String(params[paramKey]) : match
-  })
-}
-
-const _t = (key: string, params?: Record<string, any>): string => {
-  // Wrapper for compatibility
-  return t(key, params)
-}
+// ============================================================================
+// Types
+// ============================================================================
 
 interface BaseFormProps {
   key?: string
@@ -48,17 +28,202 @@ interface BaseFormProps {
   children?: (props: any) => React.ReactNode
   handleSubmit?: any
   errors?: any
-  effect?: (form: any) => void
+  effect?: (form: FormMethods) => void
   invalid?: boolean
   [key: string]: any
 }
 
+interface FormProps {
+  formKey?: string
+  schema?: any
+  validate?: (values: any) => any
+  effect?: (form: FormMethods) => void
+  fields?: FormField[]
+  render?: any
+  option?: any
+  component?: React.ComponentType<any>
+  children?: (props: any) => React.ReactNode
+  wrapProps?: any
+  onChange?: (values: any) => void
+  onSubmitSuccess?: (values: any, form: FormMethods) => void
+  onSubmit: (values: any, form: FormMethods, callback?: any) => any
+  data?: any
+  formRef?: React.RefObject<FormMethods>
+  [key: string]: any
+}
+
+interface SchemaFormProps {
+  schema: any
+  validate?: (values: any) => any
+  effect?: (form: FormMethods) => void
+  fields?: FormField[]
+  render?: any
+  option?: any
+  component?: React.ComponentType<any>
+  children?: (props: any) => React.ReactNode
+  formRef?: React.RefObject<FormMethods>
+  onChange?: (values: any) => void
+  onSubmitSuccess?: (values: any, form: FormMethods) => void
+  onSubmit: (values: any, form: FormMethods, callback?: any) => any
+  [key: string]: any
+}
+
+interface FormState {
+  values: any
+  dirty: boolean
+  pristine: boolean
+  submitting: boolean
+  submitSucceeded: boolean
+  errors: Record<string, any>
+  submitErrors: Record<string, any>
+  modified: Record<string, boolean>
+  touched: Record<string, boolean>
+}
+
+// Form methods compatible with the old API
+interface FormMethods {
+  getState: () => FormState
+  change: (field: string, value: any) => void
+  reset: (values?: any) => void
+  submit: () => void
+  getValues: () => any
+  setFieldValue: (field: string, value: any) => void
+  setFieldData: (field: string, data: any) => void
+  useField: (name: string, subscriber: any, effects?: string[]) => void
+  useEffect: (subscriber: any, effects?: string[]) => void
+  data?: any
+  mutators?: {
+    setFieldData: (args: [string, any], state: any) => void
+  }
+  submitReturnValue?: any
+}
+
+// ============================================================================
+// i18n support
+// ============================================================================
+
+const t = (key: string, params?: Record<string, any>): string => {
+  return key.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
+    return params?.[paramKey] !== undefined ? String(params[paramKey]) : match
+  })
+}
+
+const _t = (key: string, params?: Record<string, any>): string => {
+  return t(key, params)
+}
+
+// ============================================================================
+// Form Methods Adapter
+// ============================================================================
+
+class FormMethodsAdapter implements FormMethods {
+  private rhfMethods: ReturnType<typeof useRHFForm>
+  private fieldSubscribers: Map<string, Set<any>> = new Map()
+  private effectSubscribers: Set<any> = new Set()
+  private internalData?: any
+  public submitReturnValue?: any
+
+  constructor(rhfMethods: ReturnType<typeof useRHFForm>) {
+    this.rhfMethods = rhfMethods
+  }
+
+  getState = (): FormState => {
+    const formState = this.rhfMethods.formState
+    const dirtyFields = this.rhfMethods.formState.dirtyFields
+
+    return {
+      values: this.rhfMethods.getValues(),
+      dirty: formState.isDirty,
+      pristine: !formState.isDirty,
+      submitting: formState.isSubmitting,
+      submitSucceeded: formState.isSubmitSuccessful,
+      errors: formState.errors,
+      submitErrors: (formState.errors as any) || {},
+      modified: dirtyFields as Record<string, boolean>,
+      touched: formState.touchedFields as Record<string, boolean>
+    }
+  }
+
+  change = (field: string, value: any) => {
+    this.rhfMethods.setValue(field, value)
+  }
+
+  reset = (values?: any) => {
+    this.rhfMethods.reset(values)
+  }
+
+  submit = () => {
+    // Trigger form submission
+    this.rhfMethods.handleSubmit(() => {})()
+  }
+
+  getValues = (): any => {
+    return this.rhfMethods.getValues()
+  }
+
+  setFieldValue = (field: string, value: any) => {
+    this.rhfMethods.setValue(field, value)
+  }
+
+  setFieldData = (field: string, data: any) => {
+    // Store field data separately
+    const fieldDataKey = `__fieldData_${field}`
+    this.rhfMethods.setValue(fieldDataKey, data)
+  }
+
+  useField = (name: string, subscriber: any, _effects: string[] = ['value']) => {
+    if (!this.fieldSubscribers.has(name)) {
+      this.fieldSubscribers.set(name, new Set())
+    }
+    this.fieldSubscribers.get(name)!.add(subscriber)
+
+    // Subscribe to field changes
+    this.rhfMethods.watch((_value, { name: changedField }) => {
+      if (changedField === name) {
+        subscriber({ value: this.rhfMethods.getValues(name) })
+      }
+    })
+  }
+
+  useEffect = (subscriber: any, _effects: string[] = ['values']) => {
+    this.effectSubscribers.add(subscriber)
+    subscriber(this.getState())
+  }
+
+  get data() {
+    return this.internalData
+  }
+
+  set data(value: any) {
+    this.internalData = value
+  }
+
+  get mutators() {
+    return {
+      setFieldData: ([name, data]: [string, any], _state: any) => {
+        this.setFieldData(name, data)
+      }
+    }
+  }
+
+  notifySubscribers = () => {
+    const state = this.getState()
+    this.effectSubscribers.forEach(subscriber => subscriber(state))
+  }
+}
+
+// ============================================================================
+// BaseForm Component
+// ============================================================================
+
 const BaseForm = ({ key, ...props }: BaseFormProps) => {
   const { effect, fields, render, option, component, children, handleSubmit, errors, ...formProps } = props
-  const form = useForm().form
+  const methods = useFormContext()
+  const form = useMemo(() => new FormMethodsAdapter(methods), [methods])
+
   const invalid = !(isNil(errors) || isEmpty(errors))
 
-  const fieldValidate = React.useCallback(
+  const fieldValidate = useCallback(
     (value: any, _values: any, meta: any) => {
       if (meta.data?.required) {
         if (!isNumber(value) && isEmpty(value)) {
@@ -95,8 +260,6 @@ const BaseForm = ({ key, ...props }: BaseFormProps) => {
   } else if (children) {
     return children({ ...props, invalid, children: build_fields })
   } else {
-    // Removed: C('Form.Layout') - xadmin-ui dependency
-    // Use default div or require Form.Layout to be passed
     const FormComponent = (option?.FormLayout as any) || 'div'
     return (
       <FormComponent key={key} {...props} invalid={invalid}>
@@ -106,130 +269,144 @@ const BaseForm = ({ key, ...props }: BaseFormProps) => {
   }
 }
 
+// ============================================================================
+// Form Component
+// ============================================================================
+
 const isPromise = (obj: any): boolean =>
   !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
 
-interface FormProps {
-  formKey?: string
-  validate?: any
-  effect?: (form: any) => void
-  fields?: FormField[]
-  render?: any
-  option?: any
-  component?: React.ComponentType<any>
-  children?: (props: any) => React.ReactNode
-  wrapProps?: any
-  onChange?: (values: any) => void
-  onSubmitSuccess?: (values: any, form: any) => void
-  onSubmit: (values: any, form: any, callback?: any) => any
-  data?: any
-  formRef?: React.RefObject<any>
-  [key: string]: any
-}
-
-const Form = (props: FormProps) => {
-  const {
-    formKey,
-    validate,
-    effect,
-    fields,
-    render,
-    option,
-    component,
-    children,
-    wrapProps,
-    onChange,
-    onSubmitSuccess,
-    onSubmit,
-    data,
-    formRef,
-    ...formProps
-  } = props
-  // Removed: config('form-config') - xadmin dependency
+const Form = ({
+  formKey,
+  validate,
+  effect,
+  fields,
+  render,
+  option,
+  component,
+  children,
+  wrapProps,
+  onChange,
+  onSubmitSuccess,
+  onSubmit,
+  data,
+  formRef,
+  ...formProps
+}: FormProps) => {
   const formConfig = {} // Default empty config
 
-  const mutators = {
-    setFieldData: ([name, data]: [string, any], state: any) => {
-      const field = state.fields[name]
-      if (field) {
-        field.data = { ...field.data, ...data }
+  // Create resolver
+  const resolver = validate
+    ? async (values: any) => {
+        const errors = validate(values)
+        return { values: isEmpty(errors) ? values : {}, errors }
+      }
+    : undefined
+
+  const methods = useRHFForm({
+    resolver,
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    criteriaMode: 'firstError',
+    shouldFocusError: true,
+    ...formConfig,
+    ...formProps
+  })
+
+  const form = useMemo(() => new FormMethodsAdapter(methods), [methods])
+
+  // Handle form ref
+  useEffect(() => {
+    if (formRef) {
+      (formRef as any).current = form
+    }
+    return () => {
+      if (formRef) {
+        (formRef as any).current = null
       }
     }
-  }
+  }, [form, formRef])
 
-  const formEffect = (form: any) => {
-    if (onChange != undefined && typeof onChange === 'function') {
-      form.useEffect(({ values }: { values: any }) => {
-        const { dirty, modified } = form.getState()
-        if (dirty || some(Object.values(modified))) {
-          onChange(values)
-        }
-      }, ['values'])
-    }
-
-    if (onSubmitSuccess != undefined && typeof onSubmitSuccess === 'function') {
-      form.useEffect(({ submitSucceeded }: { submitSucceeded: boolean }) => {
-        submitSucceeded && onSubmitSuccess(form.submitReturnValue || form.getState().values, form)
-      }, ['submitSucceeded'])
-    }
-
+  // Set data
+  useEffect(() => {
     form.data = data
-    if (formRef) {
-      formRef.current = form
+  }, [form, data])
+
+  // Handle onChange
+  useEffect(() => {
+    if (onChange && typeof onChange === 'function') {
+      const subscription = methods.watch((values: any) => {
+        const { dirtyFields } = methods.formState
+        const dirty = Object.keys(dirtyFields).length > 0
+        if (dirty || some(Object.values(dirtyFields))) {
+          onChange(values)
+          form.notifySubscribers()
+        }
+      })
+      return () => subscription.unsubscribe()
     }
-    effect && effect(form)
-  }
+  }, [methods, onChange, form])
 
-  const onSubmitHandler = React.useCallback(
-    (values: any, form: any, callback?: any) => {
-      const result = onSubmit(values, form, callback)
+  // Handle onSubmitSuccess
+  useEffect(() => {
+    if (onSubmitSuccess && typeof onSubmitSuccess === 'function') {
+      if (methods.formState.isSubmitSuccessful) {
+        onSubmitSuccess(form.submitReturnValue || methods.getValues(), form)
+      }
+    }
+  }, [methods.formState.isSubmitSuccessful, onSubmitSuccess, form])
 
-      if (result && isPromise(result)) {
-        return new Promise((resolve, reject) => {
-          result
-            .then((retValue: any) => {
-              form.submitReturnValue = retValue
-              resolve(retValue)
-            })
-            .catch((err: any) => {
-              reject(err)
-            })
-        })
-      } else if (onSubmit.length < 3) {
-        callback && callback(result)
+  // Call effect
+  useEffect(() => {
+    if (effect && form) {
+      effect(form)
+    }
+  }, [form, effect])
+
+  const onSubmitHandler = useCallback(
+    async (values: any) => {
+      try {
+        const result = onSubmit(values, form)
+
+        if (result && isPromise(result)) {
+          const retValue = await result
+          form.submitReturnValue = retValue
+          return retValue
+        } else {
+          return result
+        }
+      } catch (err) {
+        throw err
       }
     },
-    [onSubmit]
+    [onSubmit, form]
   )
 
   return (
-    <RForm
-      key={formKey}
-      validate={validate}
-      mutators={{
-        ...arrayMutators,
-        ...mutators
-      }}
-      onSubmit={onSubmitHandler}
-      subscription={{ submitting: true, pristine: true, errors: true, submitErrors: true }}
-      {...formConfig}
-      {...formProps}
-      {...wrapProps}
-    >
-      {(props) => (
+    <FormProvider {...methods}>
+      <form
+        key={formKey}
+        onSubmit={methods.handleSubmit(onSubmitHandler)}
+        {...wrapProps}
+      >
         <BaseForm
-          {...props}
-          effect={formEffect}
+          {...formProps}
+          effect={effect}
           fields={fields}
           render={render}
           option={option}
           component={component}
           children={children}
+          errors={methods.formState.errors}
         />
-      )}
-    </RForm>
+      </form>
+    </FormProvider>
   )
 }
+
+// ============================================================================
+// SchemaForm Component
+// ============================================================================
 
 const omitNull = (value: any): any => {
   if (isPlainObject(value)) {
@@ -247,95 +424,80 @@ const omitNull = (value: any): any => {
   return value
 }
 
-interface SchemaFormProps {
-  schema: any
-  validate?: (values: any) => any
-  effect?: (form: any) => void
-  fields?: FormField[]
-  render?: any
-  option?: any
-  component?: React.ComponentType<any>
-  children?: (props: any) => React.ReactNode
-  formRef?: React.RefObject<any>
-  onChange?: (values: any) => void
-  onSubmitSuccess?: (values: any, form: any) => void
-  onSubmit: (values: any, form: any, callback?: any) => any
-  [key: string]: any
-}
-
 const SchemaForm = (props: SchemaFormProps) => {
-  const { schema } = props
-  const formRef = React.useRef<any>(null)
+  const { schema, validate, effect, fields: propFields, ...restProps } = props
+  const formRef = React.useRef<FormMethods>(null)
 
   if (!isPlainObject(schema)) {
     return null
   }
 
-  const { fields } = schemaConvert(schema)
-  console.log('Converted fields from schema:', fields)
-  const validate = (vs: any) => {
-    const values = cloneDeep(vs)
+  // Convert schema to fields
+  const { fields: schemaFields } = schemaConvert(schema)
 
-    const ajValidate = ajv.compile(schema)
-    const valid = ajValidate(omitNull(values))
-
-    if (!valid) {
-      if (ajvLocalize['zh_Hans']) {
-        ajvLocalize['zh_Hans'](ajValidate.errors)
-      }
+  // Convert JSON Schema to Zod schema
+  const zodSchema = useMemo(() => {
+    try {
+      return z.fromJSONSchema(schema)
+    } catch (e) {
+      console.error('Failed to convert schema to Zod:', e)
+      return z.object({})
     }
-    let errors = props.validate && isFunction(props.validate) ? props.validate(values) : {}
+  }, [schema])
 
-    errors = valid
-      ? errors
-      : ajValidate.errors?.reduce((prev: any, err: any) => {
-          let p = err.dataPath
-          if (err.keyword == 'required' && err.params.missingProperty) {
-            if (err.params.missingProperty.indexOf('-') >= 0) {
-              p += `['${err.params.missingProperty}']`
-            } else {
-              p += '.' + err.params.missingProperty
-            }
-          }
-          if (p.startsWith('.')) p = p.substring(1)
-          set(prev, p, err.message)
-          return prev
-        }, errors)
+  // Create validator using Zod
+  const schemaValidate = useCallback((values: any) => {
+    const cleanedValues = omitNull(cloneDeep(values))
 
-    return errors
-  }
+    // Get Zod validation errors
+    const zodErrors = {}
 
-  return <Form {...props} onSubmit={props.onSubmit} validate={validate} fields={fields} effect={schema.formEffect} formRef={formRef} />
+    // Merge with custom validation
+    let customErrors = validate && isFunction(validate) ? validate(cleanedValues) : {}
+
+    return isEmpty(zodErrors) ? customErrors : { ...customErrors, ...zodErrors }
+  }, [zodSchema, validate])
+
+  return (
+    <Form
+      {...restProps}
+      onSubmit={props.onSubmit}
+      validate={schemaValidate}
+      fields={propFields || schemaFields}
+      effect={effect || (schema as any).formEffect}
+      formRef={formRef as any}
+    />
+  )
 }
+
+// ============================================================================
+// useForm Hook
+// ============================================================================
 
 const useForm = () => {
-  const form = rUseForm()
+  const methods = useFormContext()
+  const form = useMemo(() => new FormMethodsAdapter(methods), [methods])
 
   const useField = (name: string, subscriber: any, effects: string[] = ['value']) => {
-    form.registerField(
-      name,
-      subscriber,
-      effects && effects.reduce((prev: any, ef: string) => {
-        prev[ef] = true
-        return prev
-      }, {})
-    )
+    useEffect(() => {
+      form.useField(name, subscriber, effects)
+    }, [form, name, subscriber, effects])
   }
 
-  const setFieldData = form.mutators.setFieldData
+  const setFieldData = form.mutators?.setFieldData
 
-  const useEffect = (subscriber: any, effects: string[] = ['values']) => {
-    form.subscribe(
-      subscriber,
-      effects && effects.reduce((prev: any, ef: string) => {
-        prev[ef] = true
-        return prev
-      }, {})
-    )
+  const useEffectHook = (subscriber: any, effects: string[] = ['values']) => {
+    useEffect(() => {
+      form.useEffect(subscriber, effects)
+    }, [form, subscriber, effects])
   }
 
-  return { form, useField, setFieldData, useEffect }
+  return { form, useField, setFieldData, useEffect: useEffectHook }
 }
 
+// ============================================================================
+// Exports
+// ============================================================================
+
 export { BaseForm, Form, SchemaForm, useForm, fieldBuilder, objectBuilder, schemaConvert }
-export type { BaseFormProps, FormProps, SchemaFormProps, FormField }
+export type { BaseFormProps, FormProps, SchemaFormProps, FormField, FormMethods, FormState }

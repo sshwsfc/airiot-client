@@ -291,5 +291,5 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
 // Initialize default converters
 setSchemaConverters(converters)
 
-export { convert, converters }
+export { convert, converters, convert as schemaConvert }
 export type { SchemaField, FormField, ConvertOptions }

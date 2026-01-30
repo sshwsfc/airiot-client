@@ -1,8 +1,11 @@
 import React from 'react'
-import { Field } from 'react-final-form'
+import { useFormContext, Controller, RegisterOptions } from 'react-hook-form'
 import { FormField } from './schema'
 
-// Types for form fields and component options
+// ============================================================================
+// Types
+// ============================================================================
+
 interface FieldOption {
   fieldsDefined?: Record<string, FormField>
   fieldValidate?: any
@@ -13,10 +16,13 @@ interface FieldOption {
 }
 
 interface FormFieldDefinition extends Omit<FormField, 'name'> {
-  name?: string;
+  name?: string
 }
 
-// Global form fields registry
+// ============================================================================
+// Global Form Fields Registry
+// ============================================================================
+
 let globalFormFields: Record<string, FormFieldDefinition> = {}
 
 export const setFormFields = (fields: Record<string, FormFieldDefinition>) => {
@@ -25,57 +31,197 @@ export const setFormFields = (fields: Record<string, FormFieldDefinition>) => {
 
 export const getFormFields = () => globalFormFields
 
-const FieldWrapComponent = ({ fieldComponent: FieldComponent, group: FieldGroup, ...props }: any) => {
-  const { data } = props.meta
-  const { effect, formEffect, name } = props.field
+// ============================================================================
+// Field Wrap Component
+// ============================================================================
 
-  // Removed: use('form') - xadmin dependency
-  // Form instance should be passed via props if needed
-  const form = props.form
+interface FieldWrapComponentProps {
+  fieldComponent: React.ComponentType<any>
+  group: React.ComponentType<any> | string
+  field: FormField
+  form: any
+  option: FieldOption
+  [key: string]: any
+}
 
+const FieldWrapComponent: React.FC<FieldWrapComponentProps> = ({
+  fieldComponent: FieldComponent,
+  group: FieldGroup,
+  field,
+  form,
+  option,
+  ...props
+}) => {
+  const { control } = useFormContext()
+  const { name } = field
+  const { effect, formEffect } = field
+
+  // Get field data (for display, required, etc.)
+  const fieldDataKey = `__fieldData_${name}`
+  const fieldData = useFormContext().watch(fieldDataKey as any) || {}
+
+  // Handle effect hooks
   React.useEffect(() => {
     if (formEffect && form) {
-      formEffect(form, props)
+      formEffect(form, { field, form, option })
     }
     if (effect && form) {
-      // Hook into form field lifecycle if needed
-      if (form.useField) {
-        form.useField(name, (state: any) => effect(state, form, props.field))
-      }
+      form.useField(name, (state: any) => effect(state, form, field))
     }
-  }, [form])
+  }, [form, effect, formEffect, name])
 
-  if (data.display === false) {
+  if (fieldData.display === false) {
     return null
   }
-  const newField = data.field ? { ...props.field, ...data.field } : props.field
-  if (data.required === true) {
+
+  const newField = fieldData.field ? { ...field, ...fieldData.field } : field
+  if (fieldData.required === true) {
     newField.required = true
   }
 
-  return FieldComponent.useGroup === false ? (
-    <FieldComponent {...props} field={newField} group={FieldGroup} />
-  ) : (
+  const rules: RegisterOptions = {}
+
+  // Add custom validation
+  if (option.fieldValidate || field.validate) {
+    rules.validate = React.useCallback(
+      (value: any, values: any) => {
+        if (option.fieldValidate) {
+          const result = option.fieldValidate(value, values, {
+            name,
+            data: fieldData,
+            field
+          })
+          if (result) return result
+        }
+        if (field.validate) {
+          return field.validate(value, values, {
+            name,
+            data: fieldData,
+            field
+          })
+        }
+        return undefined
+      },
+      [field, fieldData, option.fieldValidate, name]
+    )
+  }
+
+  // Add required validation
+  if (newField.required) {
+    rules.required = fieldData.validationMessage || `${newField.label || name} is required`
+  }
+
+  // Add field type validations
+  if (newField.type === 'number' || newField.type === 'integer') {
+    if (newField.minimum !== undefined) {
+      rules.min = { value: newField.minimum, message: newField.validationMessage || `Must be at least ${newField.minimum}` }
+    }
+    if (newField.maximum !== undefined) {
+      rules.max = { value: newField.maximum, message: newField.validationMessage || `Must be at most ${newField.maximum}` }
+    }
+  }
+
+  if (newField.type === 'text' || newField.type === 'textarea') {
+    if (newField.minlength !== undefined) {
+      rules.minLength = { value: newField.minlength, message: newField.validationMessage || `Minimum ${newField.minlength} characters` }
+    }
+    if (newField.maxlength !== undefined) {
+      rules.maxLength = { value: newField.maxlength, message: newField.validationMessage || `Maximum ${newField.maxlength} characters` }
+    }
+    if (newField.pattern) {
+      rules.pattern = { value: new RegExp(newField.pattern), message: newField.validationMessage || 'Invalid format' }
+    }
+  }
+
+  // If FieldComponent doesn't use useGroup, render directly
+  if ((FieldComponent as any).useGroup === false) {
+    return (
+      <Controller
+        name={name as any}
+        control={control}
+        rules={rules}
+        render={({ field: controllerField, fieldState: { error } }) => (
+          <FieldComponent
+            {...props}
+            {...controllerField}
+            field={newField}
+            form={form}
+            option={option}
+            meta={{
+              value: controllerField.value,
+              name: controllerField.name,
+              onChange: controllerField.onChange,
+              onBlur: controllerField.onBlur,
+              data: fieldData,
+              error: error?.message,
+              touched: false,
+              valid: !error
+            }}
+          />
+        )}
+      />
+    )
+  }
+
+  // Otherwise wrap in FieldGroup
+  return (
     <FieldGroup {...props} field={newField}>
-      <FieldComponent {...props} field={newField} group={FieldGroup} />
+      <Controller
+        name={name as any}
+        control={control}
+        rules={rules}
+        render={({ field: controllerField, fieldState: { error } }) => (
+          <FieldComponent
+            {...props}
+            {...controllerField}
+            field={newField}
+            form={form}
+            option={option}
+            group={FieldGroup}
+            meta={{
+              value: controllerField.value,
+              name: controllerField.name,
+              onChange: controllerField.onChange,
+              onBlur: controllerField.onBlur,
+              data: fieldData,
+              error: error?.message,
+              touched: false,
+              valid: !error
+            }}
+          />
+        )}
+      />
     </FieldGroup>
   )
 }
 
+// ============================================================================
+// Default UI Render
+// ============================================================================
+
 const defaultUIRender = (fields: FormField[], option: FieldOption) => {
-  return fields.map(field => fieldBuilder(field, option))
+  return fields.map((field, index) => (
+    <React.Fragment key={field.name || field.key || index}>
+      {fieldBuilder(field, option)}
+    </React.Fragment>
+  ))
 }
 
-const objectBuilder = (fields: FormField[], render: any, option: FieldOption): React.ReactNode => {
+// ============================================================================
+// Object Builder
+// ============================================================================
+
+export const objectBuilder = (fields: FormField[], render: any, option: FieldOption): React.ReactNode => {
   const fields_defined = option.fieldsDefined
     ? { ...globalFormFields, ...option.fieldsDefined }
     : globalFormFields
+
   const fields_wraped = fields
-    .filter(field => field.type === undefined || fields_defined[field.type] !== undefined)
-    .map(field => {
+    .filter((field) => field.type === undefined || fields_defined[field.type] !== undefined)
+    .map((field) => {
       return { ...fields_defined[field.type || 'text'], ...field, option }
     })
-    .map(field =>
+    .map((field) =>
       option.fieldValidate
         ? {
             ...field,
@@ -89,37 +235,58 @@ const objectBuilder = (fields: FormField[], render: any, option: FieldOption): R
   return (render || defaultUIRender)(fields_wraped, option)
 }
 
-const fieldBuilder = (field: FormField, option: FieldOption, ...props: any[]): React.ReactNode => {
+// ============================================================================
+// Field Builder
+// ============================================================================
+
+export const fieldBuilder = (field: FormField, option: FieldOption, ...props: any[]): React.ReactNode => {
   if (field.render) {
     return field.render(field, option, fieldBuilder, objectBuilder, ...props)
   } else {
     const { name, component: FieldComponent, group, type, ...fieldProps } = field
-    // Removed: C('Form.FieldGroup') - xadmin-ui dependency
-    // Use default group from option or require it to be passed
-    const FieldGroup = group || (option && option.group ? option.group : 'div')
+    const FieldGroup = group || (option?.group ? option.group : 'div')
+
+    if (!name) {
+      console.warn('Field is missing name property:', field)
+      return null
+    }
+
+    if (!FieldComponent) {
+      console.warn(`Field "${name}" is missing component property`)
+      return null
+    }
 
     return (
-      <Field
+      <FieldWrapComponent
+        key={name}
         name={name}
-        {...fieldProps}
-        component={FieldWrapComponent}
         field={field}
+        form={option.form}
         option={option}
-        group={FieldGroup}
         fieldComponent={FieldComponent}
+        group={FieldGroup}
+        {...fieldProps}
         {...props}
       />
     )
   }
 }
 
-const prefixFieldKey = (field: FormField, prefix: string): FormField => {
+// ============================================================================
+// Prefix Field Key
+// ============================================================================
+
+export const prefixFieldKey = (field: FormField, prefix: string): FormField => {
   const f: FormField = { ...field, key: prefix + field.key, name: prefix + field.name }
   if (field.fields && field.fields.length > 0) {
-    f.fields = field.fields.map(cf => prefixFieldKey(cf, prefix))
+    f.fields = field.fields.map((cf) => prefixFieldKey(cf, prefix))
   }
   return f
 }
 
-export { defaultUIRender, objectBuilder, fieldBuilder, prefixFieldKey }
-export type { FormField, FieldOption }
+// ============================================================================
+// Exports
+// ============================================================================
+
+export { defaultUIRender }
+export type { FormField, FieldOption, FieldWrapComponentProps }
