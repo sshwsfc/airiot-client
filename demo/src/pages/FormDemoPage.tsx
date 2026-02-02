@@ -1,6 +1,6 @@
 import React, { useState, cloneElement } from 'react'
 import type { ReactNode } from 'react'
-import { useForm, FormProvider, useFormContext, useFormSchema, useFieldUIStateValue, Controller } from '@airiot/client'
+import { useForm, FormProvider, useFormContext, useFormSchema, useFieldUIStateValue, Controller, type UseFormPropsExtended, type UseFormSchemaProps } from '@airiot/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,76 +22,109 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 
+type FormProps = UseFormPropsExtended & {
+  formId: string
+  children: ReactNode
+  onSubmit: (data: any) => void
+}
 
-const Form = ({ children, onSubmit, onEffect, ...props }: { children: ReactNode, onSubmit: (data: any) => void, onEffect?: (values: any, methods: any) => void }) => {
+type SchemaFormProps = FormProps & UseFormSchemaProps & {
+  children?: ReactNode | ((props: any) => ReactNode)
+}
+
+const Form = ({ formId, children, onSubmit, onEffect, ...props } : FormProps ) => {
   const methods = useForm({ ...props, onEffect })
   console.log('Form methods:', methods)
-  return (<FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
+  return (
+    <FormProvider {...methods}>
+      <form id={formId} onSubmit={methods.handleSubmit(onSubmit)}>
         {children}
       </form>
     </FormProvider>
   )
 }
 
-const SchemaForm = ({ schema, formSchema, onSubmit, children, ...props }: { schema: any, formSchema?: any, onSubmit: (data: any) => void, children?: (props: any) => ReactNode }) => {
+const SchemaForm = ({ schema, formSchema, onSubmit, formId, children, ...props }: SchemaFormProps) => {
   const { fields, resolver } = useFormSchema({ schema, formSchema })
   console.log('SchemaForm fields:', fields, resolver)
   const methods = useForm({
     resolver: resolver, ...props
   } as any)
 
-  return (<FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
-        <input type="submit" />
+  return (
+    <FormProvider {...methods}>
+      <form id={formId} onSubmit={methods.handleSubmit(onSubmit)}>
+        <FieldGroup>
+          {fields.map(field => (
+            <FormField {...field}
+              options={{ required: field.required }}
+            />
+          ))}
+        </FieldGroup>
+        {children ? ( typeof children === 'function' ? children({
+          ...methods
+        }) : children ) : null}
       </form>
-      {/* {children({
-        children: fields,
-        invalid: !methods.formState.isValid,
-        submitting: methods.formState.isSubmitting,
-        handleSubmit: methods.handleSubmit(onSubmit)
-      })} */}
     </FormProvider>
   )
 }
 
+const OptionSelect = ({ value, onChange, placeholder, titleMap, ['aria-invalid']: ariaInvalid }: { value?: string, onChange?: (value: string) => void, placeholder?: string, titleMap?: { name: string, value: string }[], ['aria-invalid']?: boolean }) => (
+  <Select value={value} onValueChange={onChange}>
+    <SelectTrigger className="w-full max-w-48" aria-invalid={ariaInvalid}>
+      <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectGroup>
+        {titleMap && titleMap.map(({ value, name }) => (
+          <SelectItem key={value} value={value}>{name}</SelectItem>
+        ))}
+      </SelectGroup>
+    </SelectContent>
+  </Select>
+)
+
 const fieldMap: { [key: string]: React.ComponentType<any> } = {
   'text': Input,
-  'select': Select,
+  'select': OptionSelect,
   'textarea': Textarea,
   'number': Input
 }
 
-const FormField = ({ name, label, type, description, children, options }: { name: string, label?: ReactNode, type?: string, description?: ReactNode, children?: ReactNode | ((props: any) => ReactNode), options?: any }) => {
+const FormField = ({ name, label, type, description, children, required, rules, ...restProps }: { name: string, label?: ReactNode, type?: string, description?: ReactNode, children?: ReactNode | ((props: any) => ReactNode), required?: boolean, rules?: any, [key: string]: any }) => {
   const { control } = useFormContext()
   const ui = useFieldUIStateValue(name)
   const ContorlComponent = type && fieldMap[type] || Input
+  const fieldId = `form-rhf-${name}` + (Math.random().toString(36).substr(2, 9))
 
   return ui.visible ? (
     <Controller
         name={name}
         control={control}
-        rules={options}
+        rules={{ required, ...rules }}
         render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor={`form-rhf-${name}`}>
-            {label || name}
+          <FieldLabel htmlFor={fieldId}>
+            {label || name}{required && <span className="text-red-500">*</span>}
           </FieldLabel>
           {
             children ? ( typeof children === 'function' ? children({
-              id: `form-rhf-${name}`,
+              id: fieldId,
               ...field,
+              ...restProps,
               ref: null,
               'aria-invalid': fieldState.invalid
             }) : cloneElement(children as React.ReactElement, {
-              id: `form-rhf-${name}`,
+              id: fieldId,
               ...field,
+              ...restProps,
               ref: null,
               'aria-invalid': fieldState.invalid
             }) ) : (
               <ContorlComponent
-                id={`form-rhf-${name}`}
+                id={fieldId}
                 {...field}
+                {...restProps}
                 ref={null}
                 aria-invalid={fieldState.invalid}
               />
@@ -198,32 +231,26 @@ export default function FormDemoPage() {
               if(values.gender === 'other') {
                 // 设置 status 字段为只读
                 console.log('设置 status 字段为不可见')
-                setFieldUIState('status', (prev: any) => ({ ...prev, visible: false }))
+                setFieldUIState('status', { visible: false })
               } else {
-                setFieldUIState('status', (prev: any) => ({ ...prev, visible: true }))
+                setFieldUIState('status', { visible: true })
               }
             }}
           >
             <FieldGroup>
               {userFormFields.map(field => (
-                <FormField
-                  name={field.name}
-                  label={field.label}
-                  type={field.type}
-                  options={{ required: field.required }}
-                />
+                <FormField {...field} />
               ))}
               <FormField
                 name="gender"
                 label="性别"
-                options={{ required: true }}
+                required
               >
                 <GenderSelect />
               </FormField>
               <FormField
                 name="status"
                 label="状态"
-                options={{ required: true }}
               >
                 <Input placeholder="active, inactive, pending" />
               </FormField>
@@ -231,7 +258,7 @@ export default function FormDemoPage() {
             {/** 提交和取消按钮 */}
             <div className='flex mt-4 justify-center'>
               <Button type="submit">
-                Submit
+                保存
               </Button>
             </div>
           </Form>
@@ -244,18 +271,20 @@ export default function FormDemoPage() {
             schema={userFormSchema}
             formSchema={userFormUISchema}
             onSubmit={handleSubmit}
-          >{props => {
-              const { children, invalid, handleSubmit, submitting, onCancel } = props
-              return (
-                <form className="rounded-md border p-4 space-y-4" onSubmit={handleSubmit}>
-                  {children}
-                  <div className='flex gap-4 justify-center'>
-                    <Button type="submit" disabled={invalid || submitting}>保存</Button>
-                    <Button onClick={() => onCancel ? onCancel() : history.back()} variant="secondary">取消</Button>
-                  </div>
-                </form>
-              )
+            onEffect={(values: any, { setFieldUIState }) => {
+              console.log('Form Effect - 当前值:', values, setFieldUIState)
+              if(values.gender === 'other') {
+                // 设置 status 字段为只读
+                console.log('设置 status 字段为不可见')
+                setFieldUIState('status', { visible: false })
+              } else {
+                setFieldUIState('status', { visible: true })
+              }
             }}
+          >
+            <div className='flex mt-4 justify-center'>
+              <Button type="submit">保存</Button>
+            </div>
           </SchemaForm>
         </div>
 

@@ -1,4 +1,4 @@
-import { Model, ModelContext, ModelSchema, ModelAtoms } from './base'
+import { Model, ModelContext, ModelSchema, ModelAtoms, modelRegistry } from './base'
 import hooks, {
   useModel,
   useModelValue,
@@ -30,6 +30,7 @@ export {
   Model,
   ModelContext,
   hooks,
+  modelRegistry,
   useModel,
   useModelValue,
   useModelState,

@@ -43,7 +43,7 @@ interface FormField {
   items?: FormField
   itemsRender?: any
   render?: any
-  titleMap?: Array<{ name: string; value: any }>
+  options?: Array<{ name: string; value: any }>
   description?: string
   maxlength?: number
   minlength?: number
@@ -55,23 +55,20 @@ interface FormField {
   schema?: SchemaField
   [key: string]: any
 }
-
 interface ConvertOptions {
   path?: string[]
   lookup?: Record<string, FormField>
   readonly?: string[]
   required?: string[]
   ignore?: string[]
+  formSchema?: FormField[]
+  converters?: Array<ConverterArgs>
   global?: {
     formDefaults?: FormField
   }
 }
 
-let globalSchemaConverters: Array<(f: FormField, schema: SchemaField, options: ConvertOptions) => FormField> = []
-
-export const setSchemaConverters = (converters: Array<(f: FormField, schema: SchemaField, options: ConvertOptions) => FormField>) => {
-  globalSchemaConverters = converters
-}
+type ConverterArgs = (f: FormField, schema: SchemaField, options: ConvertOptions) => FormField
 
 const stripNullType = (type: string | string[] | undefined): string | undefined => {
   if (Array.isArray(type) && type.length == 2) {
@@ -82,53 +79,36 @@ const stripNullType = (type: string | string[] | undefined): string | undefined 
 }
 
 const enumToTitleMap = (enm: any[], title?: any): Array<{ name: string; value: any }> => {
-  let titleMap: Array<{ name: string; value: any }> = []
+  let options: Array<{ name: string; value: any }> = []
   enm.forEach((name, index) => {
-    titleMap.push({
+    options.push({
       name: title != undefined ? (isArray(title) ? title[index] : title[name]) || name : name,
       value: name
     })
   })
-  return titleMap
+  return options
 }
 
-const canonicalTitleMap = (titleMap: any, originalEnum?: any[]): Array<{ name: string; value: any }> => {
-  if (!isArray(titleMap)) {
+const canonicalTitleMap = (options: any, originalEnum?: any[]): Array<{ name: string; value: any }> => {
+  if (!isArray(options)) {
     let canonical: Array<{ name: string; value: any }> = []
     if (originalEnum) {
       originalEnum.forEach(value => {
-        canonical.push({ name: titleMap[value], value: value })
+        canonical.push({ name: options[value], value: value })
       })
     } else {
-      for (let k in titleMap) {
-        if (titleMap.hasOwnProperty(k)) {
-          canonical.push({ name: k, value: titleMap[k] })
+      for (let k in options) {
+        if (options.hasOwnProperty(k)) {
+          canonical.push({ name: k, value: options[k] })
         }
       }
     }
     return canonical
   }
-  return titleMap
+  return options
 }
 
-const convert = (schema: SchemaField, options?: ConvertOptions): FormField => {
-  const opts: ConvertOptions = { ...options }
-  if (opts.path === undefined) {
-    opts.path = []
-  }
-  if (opts.lookup === undefined) {
-    opts.lookup = {}
-  }
-  const initialField: FormField = {
-    key: '',
-    name: ''
-  }
-  return globalSchemaConverters.reduce((prve, converter) => {
-    return converter(prve, schema, opts)
-  }, opts.global && opts.global.formDefaults ? cloneDeep({ ...initialField, ...opts.global.formDefaults }) : initialField)
-}
-
-const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOptions) => FormField> = [
+const defaultConverters: Array<ConverterArgs> = [
   // all form field
   (f: FormField, schema: SchemaField, options: ConvertOptions) => {
   const { path, readonly, required, lookup } = options
@@ -168,7 +148,7 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
       f.validationMessage = schema.validationMessage
     }
     if (schema.enumNames) {
-      f.titleMap = canonicalTitleMap(schema.enumNames, schema['enum'])
+      f.options = canonicalTitleMap(schema.enumNames, schema['enum'])
     }
 
     f.schema = schema
@@ -247,8 +227,8 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
         f.type = 'text'
       } else {
         f.type = 'select'
-        if (!f.titleMap) {
-          f.titleMap = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
+        if (!f.options) {
+          f.options = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
         }
       }
       switch (schema.format) {
@@ -268,8 +248,8 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
         f.type = 'number'
       } else {
         f.type = 'numselect'
-        if (!f.titleMap) {
-          f.titleMap = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
+        if (!f.options) {
+          f.options = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
         }
       }
     } else if (schema_type === 'integer') {
@@ -277,8 +257,8 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
         f.type = 'integer'
       } else {
         f.type = 'numselect'
-        if (!f.titleMap) {
-          f.titleMap = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
+        if (!f.options) {
+          f.options = enumToTitleMap(schema['enum']!, schema['enum_title'] || {})
         }
       }
     } else if (schema_type === 'boolean') {
@@ -288,8 +268,23 @@ const converters: Array<(f: FormField, schema: SchemaField, options: ConvertOpti
   }
 ]
 
-// Initialize default converters
-setSchemaConverters(converters)
+const convert = (schema: SchemaField, options?: ConvertOptions): FormField => {
+  const opts: ConvertOptions = { ...options }
+  const converters = opts.converters || []
+  if (opts.path === undefined) {
+    opts.path = []
+  }
+  if (opts.lookup === undefined) {
+    opts.lookup = {}
+  }
+  const initialField: FormField = {
+    key: '',
+    name: ''
+  }
+  return [ ...defaultConverters, ...(converters || [])].reduce((prve, converter) => {
+    return converter(prve, schema, opts)
+  }, opts.global && opts.global.formDefaults ? cloneDeep({ ...initialField, ...opts.global.formDefaults }) : initialField)
+}
 
-export { convert, converters, convert as schemaConvert }
+export { convert }
 export type { SchemaField, FormField, ConvertOptions }

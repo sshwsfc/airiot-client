@@ -9,7 +9,7 @@ interface State {
   loading: boolean
 }
 
-const TableModel = ({ tableId, loadingComponent, initQuery, children, ...props }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, children?: React.ReactNode }) => {
+const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
 
   const [{ schema, tags, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
   // Fetch table schema and tags
@@ -73,7 +73,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, children, ...props }
         orders: orders,
         initValues: { archive: true },
         initialValues: () => {
-          let initialValues = { ...table?.schema?.initialValues || {} }
+          let initialValues = { ...table?.schema?.initialValues || {}, ...initValues }
 
           const previousLocation = sessionStorage.getItem(`previousLocation`)
           const option = sessionStorage.getItem(`model_table_${table?.id}_option`)
@@ -109,15 +109,15 @@ const TableModel = ({ tableId, loadingComponent, initQuery, children, ...props }
       console.error('Failed to fetch table schema:', error)
       setState({ schema: undefined, tags: [], loading: false })
     }
-  }, [])
+  }, [tableId, initQuery, initValues])
 
   useEffect(() => {
     if (tableId) {
       fetchTableSchemaAndTags()
     }
-  }, [tableId])
+  }, [tableId, initQuery, initValues])
 
-  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema} {...props}>{children}</Model>
+  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema}>{children}</Model>
 }
 
 export {

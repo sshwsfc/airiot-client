@@ -18,3 +18,8 @@ export {
   useFieldArray,
   Controller
 } from 'react-hook-form'
+
+export type {
+  UseFormPropsExtended,
+  UseFormSchemaProps
+} from './hooks'

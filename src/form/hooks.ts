@@ -1,12 +1,13 @@
 import React from 'react'
+import isEqual from 'lodash/isEqual'
 import { atom, useAtom, useSetAtom, useAtomValue, createStore } from 'jotai'
-import { atomFamily, useAtomCallback } from 'jotai/utils'
+import { atomFamily } from 'jotai/utils'
 import { useForm as useRHFForm, type UseFormReturn, type UseFormProps, type FieldValues, Resolver } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
 import { Store } from 'jotai/vanilla/store'
 import { SchemaField, FormField } from './schema'
-import { schemaConvert } from './schema'
+import { convert as schemaConvert } from './schema'
 import { useFormContext } from './context'
 
 
@@ -19,9 +20,6 @@ export interface FieldUIState {
   disabled?: boolean
   loading?: boolean
   readonly?: boolean
-  error?: string | null
-  warning?: string | null
-  info?: string | null
   required?: boolean
   custom?: Record<string, any>
 }
@@ -41,7 +39,7 @@ export type FieldUIStateTuple = [
 // ============================================================================
 
 export interface UseFormPropsExtended extends UseFormProps {
-  onEffect?: (values: FieldValues, methods: UseFormReturn<FieldValues>) => void
+  onEffect?: (values: FieldValues, methods: UseFormReturnExtended) => void
 }
 
 export interface UseFormReturnExtended extends UseFormReturn {
@@ -51,7 +49,7 @@ export interface UseFormReturnExtended extends UseFormReturn {
 
 export interface UseFormSchemaProps extends UseFormPropsExtended {
   schema: SchemaField
-  formSchema?: Record<string, FormField>
+  formSchema?: FormField[]
 }
 
 export interface UseFormSchemaReturn {
@@ -64,18 +62,33 @@ export interface UseFormSchemaReturn {
 // ============================================================================
 
 // Create a family of atoms for each field's UI state
-const fieldUIStateFamily = atomFamily(() =>
+const fieldUIStates = atomFamily(() => 
   atom<FieldUIState>({
     visible: true,
     disabled: false,
     loading: false,
     readonly: false,
-    error: null,
-    warning: null,
-    info: null,
     custom: {}
   })
 )
+
+const fieldUIStateFamily = atomFamily((fieldName: string) => atom<FieldUIState, [FieldUIStateUpdate], void>(
+  (get) => get(fieldUIStates(fieldName)),
+  (get, set, update) => {
+    const prev = get(fieldUIStates(fieldName))
+    let newState: FieldUIState
+    if (typeof update === 'function') {
+      newState = (update as (prev: FieldUIState) => FieldUIState)(prev)
+    } else {
+      newState = {
+        ...prev,
+        ...update,
+      }
+    }
+    if(isEqual(prev, newState)) return
+    set(fieldUIStates(fieldName), newState)
+  }
+))
 
 // ============================================================================
 // Field UI State Hooks
@@ -94,9 +107,10 @@ const fieldUIStateFamily = atomFamily(() =>
  *
  * // Update state
  * setUIState({ visible: false })
+ * setUIState({ disabled: true })
  *
  * // Partial update
- * setUIState(prev => ({ ...prev, error: 'Invalid input' }))
+ * setUIState(prev => ({ ...prev, disabled: true }))
  *
  * // Reset to default
  * resetUIState()
@@ -112,9 +126,6 @@ export function useFieldUIState(fieldName: string): FieldUIStateTuple {
       disabled: false,
       loading: false,
       readonly: false,
-      error: null,
-      warning: null,
-      info: null,
       required: false,
       custom: {}
     })
@@ -145,7 +156,8 @@ export function useFieldUIStateValue(fieldName: string): FieldUIState {
  *
  * @example
  * const setUIState = useSetFieldUIState('username')
- * setUIState({ visible: false, error: 'Invalid input' })
+ * setUIState({ visible: false })
+ * setUIState({ disabled: true })
  */
 export function useSetFieldUIState(fieldName: string): FieldUIStateSetter {
   const ctx = useFormContext()
@@ -276,7 +288,7 @@ export function useFormSchema(
 
   const zodSchema = React.useMemo(() => {
     try {
-      return z.object({})
+      return z.fromJSONSchema(schema as any)
     } catch (e) {
       console.error('Failed to convert schema to Zod:', e)
       return z.object({})
@@ -284,12 +296,12 @@ export function useFormSchema(
   }, [schema])
 
   const fields = React.useMemo<FormField[]>(() => {
-    const result = schemaConvert(schema, formSchema)
+    const result = schemaConvert(schema, { formSchema })
     return result.fields || []
   }, [schema, formSchema])
 
-  const resolver = React.useMemo(() => {
-    return zodResolver(zodSchema)
+  const resolver = React.useMemo<Resolver<any, any>>(() => {
+    return zodResolver(zodSchema as any)
   }, [zodSchema])
 
   return {

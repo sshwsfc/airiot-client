@@ -2278,23 +2278,7 @@
         "name": "archivedInstance",
         "resource": "engine/archivedInstance",
         "type": "objcet",
-        "title": {
-            "key": null,
-            "ref": null,
-            "props": {
-                "children": [
-                    {
-                        "type": {},
-                        "key": null,
-                        "ref": null,
-                        "props": {},
-                        "_owner": null
-                    },
-                    "流程实例归档信息"
-                ]
-            },
-            "_owner": null
-        },
+        "title": "流程实例归档信息",
         "noAuth": true,
         "properties": {
             "flow": {

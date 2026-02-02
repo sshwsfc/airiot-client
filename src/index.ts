@@ -3,6 +3,7 @@ import createAPI from './api'
 export {
   Model, TableModel,
   ModelContext,
+  modelRegistry,
   useModel,
   useModelValue,
   useModelState,
@@ -56,3 +57,8 @@ export * from './subscribe/ws'
 export type {
   ModelSchema, ModelAtoms
 } from './model'
+
+export type {
+  UseFormPropsExtended,
+  UseFormSchemaProps
+} from './form'
