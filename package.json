@@ -1,6 +1,6 @@
 {
   "name": "@airiot/client",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "airiot client lib",
   "type": "module",
   "main": "./dist/airiot-client.umd.js",
