@@ -23,8 +23,9 @@ export function useDatasetsValue(ids: string[]) {
 
 export function useDatasourceValue(path: string) {
   if (!path) return undefined
-  const datasetId = path.split('.')[0]
-  const datasetPath = path.replace(`${datasetId}.`, '')
+  const ps = path.split('.')
+  const datasetId = ps[0]
+  const datasetPath = ps.length > 1 ? ps.slice(1).join('.') : null
 
   const data = useAtomValue(dataset(datasetId), {store: usePageStore()})
   const res = datasetPath && datasetPath !== '' ? _.get(data, datasetPath) : data

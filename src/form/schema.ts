@@ -3,6 +3,8 @@ import isArray from 'lodash/isArray'
 import merge from 'lodash/merge'
 import startCase from 'lodash/startCase'
 
+import { modelRegistry } from '../model'
+
 interface SchemaField {
   type?: string | string[]
   format?: string
@@ -216,6 +218,33 @@ const defaultConverters: Array<ConverterArgs> = [
     }
     return f
   },
+  // relateTo object or array of object
+  (f: any, schema: any) => {
+    if(schema.type == 'array' && schema.items.type == 'object' && schema.items.relateTo) {
+      const models = modelRegistry.getModels()
+      const name = schema.items.relateTo
+      if(models[name]) {
+        const model = models[name]
+        f.type = 'multi_select'
+        f.schema = model
+        f.displayField = model.displayField || 'name'
+      }
+    }
+    return f
+  },
+  (f: any, schema: any) => {
+    if(schema.type == 'object' && schema.relateTo) {
+      const models = modelRegistry.getModels()
+      const relateName = schema.relateTo
+      if(models[relateName]) {
+        const model = models[relateName]
+        f.type = 'fkselect'
+        f.schema = model
+        f.displayField = model.displayField || 'name'
+      }
+    }
+    return f
+  },
   // all normal type form field
   (f: FormField, schema: SchemaField) => {
     if (f.type !== undefined) {
@@ -268,6 +297,70 @@ const defaultConverters: Array<ConverterArgs> = [
   }
 ]
 
+const defaultFilterConverters: Array<ConverterArgs> = [
+  // all form field
+  (f: FormField, schema: SchemaField, options: ConvertOptions) => {
+
+    f.key = schema.name
+    f.label = schema.title || f.name
+
+    if (schema.description) { f.description = schema.description }
+    if (schema.maxLength) { f.maxlength = schema.maxLength }
+    if (schema.minLength) { f.minlength = schema.minLength }
+    if (schema.minimum) { f.minimum = schema.minimum + (schema.exclusiveMinimum ? 1 : 0) }
+    if (schema.maximum) { f.maximum = schema.maximum - (schema.exclusiveMaximum ? 1 : 0) }
+
+    if (schema.validationMessage) { f.validationMessage = schema.validationMessage }
+    if (schema.enumNames) { f.titleMap = canonicalTitleMap(schema.enumNames, schema['enum']) }
+
+    f.schema = schema
+
+    return f
+  },
+  (f: FormField, schema: SchemaField, options: ConvertOptions) => {
+    if(f.type !== undefined) {
+      return f
+    }
+    const schema_type = stripNullType(schema.type)
+    if(schema_type === 'string') {
+      if(!schema['enum']) {
+        f.type = 'filter_text'
+      } else {
+        f.type = 'filter_enum'
+        if (!f.titleMap) {
+          f.titleMap = enumToTitleMap(schema['enum'], schema['enum_title'] || {})
+        }
+      }
+      switch(schema.format) {
+        case 'date':
+          f.type = 'filter_date'
+          break
+        case 'time':
+          f.type = 'filter_time'
+          break
+        case 'datetime':
+          f.type = 'filter_datetime'
+          break
+        case 'date-time':
+          f.type = 'filter_datetime'
+          break
+      }
+    } else if(schema_type === 'number' || schema_type === 'integer') {
+      if(!schema['enum']) {
+        f.type = 'filter_number'
+      } else {
+        f.type = 'filter_enum'
+        if (!f.titleMap) {
+          f.titleMap = enumToTitleMap(schema['enum'], schema['enum_title'] || {})
+        }
+      }
+    } else if(schema_type === 'boolean') {
+      f.type = 'filter_bool'
+    }
+    return f
+  }
+]
+
 const convert = (schema: SchemaField, options?: ConvertOptions): FormField => {
   const opts: ConvertOptions = { ...options }
   const converters = opts.converters || []
@@ -286,5 +379,17 @@ const convert = (schema: SchemaField, options?: ConvertOptions): FormField => {
   }, opts.global && opts.global.formDefaults ? cloneDeep({ ...initialField, ...opts.global.formDefaults }) : initialField)
 }
 
-export { convert }
+const filterConvert = (schema: SchemaField, options?: ConvertOptions): FormField => {
+  const opts: ConvertOptions = { ...options }
+  const converters = opts.converters || []
+
+  const initialField: FormField = {
+    name: ''
+  }
+  return [ ...defaultFilterConverters, ...(converters || [])].reduce((prve, converter) => {
+    return converter(prve, schema, opts)
+  }, initialField)
+}
+
+export { convert, filterConvert }
 export type { SchemaField, FormField, ConvertOptions }

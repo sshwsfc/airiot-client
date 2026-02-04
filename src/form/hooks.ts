@@ -1,5 +1,6 @@
 import React from 'react'
 import isEqual from 'lodash/isEqual'
+import _ from 'lodash'
 import { atom, useAtom, useSetAtom, useAtomValue, createStore } from 'jotai'
 import { atomFamily } from 'jotai/utils'
 import { useForm as useRHFForm, type UseFormReturn, type UseFormProps, type FieldValues, Resolver } from 'react-hook-form'
@@ -7,8 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
 import { Store } from 'jotai/vanilla/store'
 import { SchemaField, FormField } from './schema'
-import { convert as schemaConvert } from './schema'
+import { convert as schemaConvert, filterConvert, type ConvertOptions } from './schema'
 import { useFormContext } from './context'
+import { getFieldProp } from '../model/utils'
 
 
 // ============================================================================
@@ -49,7 +51,9 @@ export interface UseFormReturnExtended extends UseFormReturn {
 
 export interface UseFormSchemaProps extends UseFormPropsExtended {
   schema: SchemaField
-  formSchema?: FormField[]
+  formSchema: FormField[]
+  option?: ConvertOptions
+  converters?: Record<string, (field: SchemaField, options: any) => FormField>
 }
 
 export interface UseFormSchemaReturn {
@@ -284,7 +288,7 @@ export function useForm(
 export function useFormSchema(
   props: UseFormSchemaProps
 ): UseFormSchemaReturn {
-  const { schema, formSchema } = props
+  const { schema, formSchema, converters } = props
 
   const zodSchema = React.useMemo(() => {
     try {
@@ -296,9 +300,10 @@ export function useFormSchema(
   }, [schema])
 
   const fields = React.useMemo<FormField[]>(() => {
-    const result = schemaConvert(schema, { formSchema })
+    let convertSchema = (formSchema ? { ...schema, form: formSchema } : schema) as SchemaField
+    const result = schemaConvert(convertSchema, props.option)
     return result.fields || []
-  }, [schema, formSchema])
+  }, [schema, formSchema, converters])
 
   const resolver = React.useMemo<Resolver<any, any>>(() => {
     return zodResolver(zodSchema as any)
@@ -308,4 +313,18 @@ export function useFormSchema(
     fields,
     resolver: resolver as any
   }
+}
+
+export function useFilterSchema(
+  props: UseFormSchemaProps
+): { fields: FormField[] } {
+  const { schema, formSchema: filterSchema } = props
+
+  const fields = React.useMemo(() => filterSchema.map(filterField => {
+    const key = typeof filterField == 'string' ? filterField : (filterField.key || filterField.name)
+    const field = filterConvert(getFieldProp(schema, key), props.option)
+    return _.merge(filterField, field)
+  }), [ filterSchema, schema ])
+
+  return { fields }
 }

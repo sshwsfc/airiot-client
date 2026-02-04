@@ -1,6 +1,7 @@
 export {
   useForm,
   useFormSchema,
+  useFilterSchema,
   useFieldUIState,
   useFieldUIStateValue,
   useSetFieldUIState,

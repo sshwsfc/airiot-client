@@ -528,10 +528,12 @@ export function createAPI(options: APIOptions, context?: AppContext): APIInstanc
       }
 
       return this.fetch(`?query=${filter_string}`, { noMessage: wheres.noMessage, apiMessage: model.apiMessage })
-        .then(({ json, headers }) => ({
-          items: json.map(this.convert_item.bind(this)),
-          total: withCount ? (headers['count'] || json.length) : json.length
-        }))
+        .then(({ json, headers }) => {
+          return {
+            items: json.map(this.convert_item.bind(this)),
+            total: withCount ? (headers['count'] || json.length) : json.length
+          }
+        })
     },
 
     get(id: string = '', option?: FetchOptions): Promise<any> {
