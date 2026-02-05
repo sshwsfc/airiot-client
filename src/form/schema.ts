@@ -63,7 +63,6 @@ interface ConvertOptions {
   readonly?: string[]
   required?: string[]
   ignore?: string[]
-  formSchema?: FormField[]
   converters?: Array<ConverterArgs>
   global?: {
     formDefaults?: FormField

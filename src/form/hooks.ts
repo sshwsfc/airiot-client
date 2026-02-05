@@ -53,7 +53,6 @@ export interface UseFormSchemaProps extends UseFormPropsExtended {
   schema: SchemaField
   formSchema: FormField[]
   option?: ConvertOptions
-  converters?: Record<string, (field: SchemaField, options: any) => FormField>
 }
 
 export interface UseFormSchemaReturn {
@@ -286,10 +285,8 @@ export function useForm(
  * })
  */
 export function useFormSchema(
-  props: UseFormSchemaProps
+  { schema, formSchema, option }: UseFormSchemaProps
 ): UseFormSchemaReturn {
-  const { schema, formSchema, converters } = props
-
   const zodSchema = React.useMemo(() => {
     try {
       return z.fromJSONSchema(schema as any)
@@ -301,9 +298,9 @@ export function useFormSchema(
 
   const fields = React.useMemo<FormField[]>(() => {
     let convertSchema = (formSchema ? { ...schema, form: formSchema } : schema) as SchemaField
-    const result = schemaConvert(convertSchema, props.option)
+    const result = schemaConvert(convertSchema, option)
     return result.fields || []
-  }, [schema, formSchema, converters])
+  }, [schema, formSchema, option])
 
   const resolver = React.useMemo<Resolver<any, any>>(() => {
     return zodResolver(zodSchema as any)
@@ -316,15 +313,13 @@ export function useFormSchema(
 }
 
 export function useFilterSchema(
-  props: UseFormSchemaProps
+  { schema, formSchema, option }: UseFormSchemaProps
 ): { fields: FormField[] } {
-  const { schema, formSchema: filterSchema } = props
-
-  const fields = React.useMemo(() => filterSchema.map(filterField => {
+  const fields = React.useMemo(() => formSchema.map(filterField => {
     const key = typeof filterField == 'string' ? filterField : (filterField.key || filterField.name)
-    const field = filterConvert(getFieldProp(schema, key), props.option)
+    const field = filterConvert(getFieldProp(schema, key), option)
     return _.merge(filterField, field)
-  }), [ filterSchema, schema ])
+  }), [ formSchema, schema, option ])
 
   return { fields }
 }
