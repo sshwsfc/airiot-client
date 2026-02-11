@@ -318,7 +318,7 @@ export function useFilterSchema(
   const fields = React.useMemo(() => formSchema.map(filterField => {
     const key = typeof filterField == 'string' ? filterField : (filterField.key || filterField.name)
     const field = filterConvert(getFieldProp(schema, key), option)
-    return _.merge(filterField, field)
+    return typeof filterField == 'string' ? field : _.merge(field, filterField)
   }), [ formSchema, schema, option ])
 
   return { fields }
