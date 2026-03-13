@@ -112,9 +112,9 @@ const canonicalTitleMap = (options: any, originalEnum?: any[]): Array<{ name: st
 const defaultConverters: Array<ConverterArgs> = [
   // all form field
   (f: FormField, schema: SchemaField, options: ConvertOptions) => {
-  const { path, readonly, required, lookup } = options
+    const { path, readonly, required, lookup } = options
 
-  const fieldKey = path && path.length > 0 ? path[path.length - 1] : undefined
+    const fieldKey = path && path.length > 0 ? path[path.length - 1] : undefined
     f.key = path ? path.join('.') : ''
 
     f.name = f.key
@@ -177,6 +177,9 @@ const defaultConverters: Array<ConverterArgs> = [
           if (field != '*') {
             ret.form[field] = { key: field }
           }
+        } else if (field.name !== undefined) {
+          ret.keys.push(field.name)
+          ret.form[field.name] = field
         } else if (field.key !== undefined) {
           ret.keys.push(field.key)
           ret.form[field.key] = field
@@ -301,6 +304,8 @@ const defaultFilterConverters: Array<ConverterArgs> = [
   (f: FormField, schema: SchemaField, options: ConvertOptions) => {
 
     f.key = schema.name
+    if(!f.name)
+      f.name = schema.name
     f.label = schema.title || f.name
 
     if (schema.description) { f.description = schema.description }

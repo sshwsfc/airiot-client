@@ -40,6 +40,14 @@ export {  getSettings, useMessage
 export { getConfig, setConfig
 } from './config'
 
+export type {
+  Config,
+  ToastComponent,
+  UserInfo,
+  AppSettings,
+  UserExpandSettings
+} from './config'
+
 export const api = createAPI
 
 export {
