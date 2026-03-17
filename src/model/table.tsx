@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import {Model, type ModelSchema} from './base'
+import { Model, type ModelSchema } from './base'
 import api from '../api'
 import _ from 'lodash'
 
@@ -9,7 +9,7 @@ interface State {
   loading: boolean
 }
 
-const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
+const TableModel = ({ tableId, loadingComponent, schemaTransform, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, schemaTransform?: (schema: any) => any, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
 
   const [{ schema, tags, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
   // Fetch table schema and tags
@@ -22,7 +22,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
       ])
       const { json } = tagResponse
 
-      if(table == null || table.schema == null) {
+      if (table == null || table.schema == null) {
         throw new Error('Table schema not found')
       }
 
@@ -103,7 +103,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
           }
         },
       }
-      
+
       setState({ schema, tags: json?.tags || [], loading: false })
     } catch (error) {
       console.error('Failed to fetch table schema:', error)
@@ -117,7 +117,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
     }
   }, [tableId, initQuery, initValues])
 
-  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema}>{children}</Model>
+  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema} schemaTransform={schemaTransform}>{children}</Model>
 }
 
 export {
