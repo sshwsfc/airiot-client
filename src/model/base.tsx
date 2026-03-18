@@ -97,7 +97,7 @@ const ModelInitial = ({ model, initialValues, children, query }: ModelInitialPro
     const { wheres = {}, ...option } = initial as any
 
     const defaultOpt = {
-      fields: [...(model.listFields || [])],
+      fields: [...(model.tableSchema || [])],
       order: model.defaultOrder || model.orders || {},
       limit: model.defaultPageSize || 15,
       skip: 0
