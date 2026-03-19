@@ -361,7 +361,7 @@ export function createAPI(options: APIOptions, context?: AppContext): APIInstanc
       } else if (!isEmpty(f.fields) || model.projectFields) {
         const allProject = [
           ...(model.projectFields || []),
-          ...(f.fields || []).filter(field => field.key || isString(field)).map(field => field.key || field)
+          ...(f.fields || []).map(field => field?.key || field).filter(field => Boolean(field))
         ];
         const level1 = allProject && allProject.filter(k => k.indexOf('.') === -1)
         const level2 = allProject && allProject.filter(k => k.indexOf('.') > 0)
