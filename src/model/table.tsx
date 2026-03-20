@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import {Model, type ModelSchema} from './base'
+import { Model, type ModelSchema } from './base'
 import api from '../api'
 import _ from 'lodash'
 
@@ -9,20 +9,20 @@ interface State {
   loading: boolean
 }
 
-const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
+const TableModel = ({ tableId, loadingComponent, schemaTransform, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, schemaTransform?: (schema: any) => any, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
 
   const [{ schema, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
   // Fetch table schema and tags
   const fetchTableSchemaAndTags = useCallback(async () => {
     setState({ schema: undefined, tags: [], loading: true })
     try {
-      const [table, _tagResponse] = await Promise.all([
+      const [table, tagResponse] = await Promise.all([
         api({ name: 'core/t/schema' }).get(tableId).then((payload: any) => payload),
         api({ name: `/core/t/schema/tag/${tableId}` }).fetch('')
       ])
-      // const { json } = tagResponse
+      const { json } = tagResponse
 
-      if(table == null || table.schema == null) {
+      if (table == null || table.schema == null) {
         throw new Error('Table schema not found')
       }
 
@@ -103,8 +103,8 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
           }
         },
       }
-      
-      setState({ schema, tags: [], loading: false })
+
+      setState({ schema, tags: json?.tags || [], loading: false })
     } catch (error) {
       console.error('Failed to fetch table schema:', error)
       setState({ schema: undefined, tags: [], loading: false })
@@ -117,7 +117,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
     }
   }, [tableId, initQuery, initValues])
 
-  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema}>{children}</Model>
+  return (loading || schema == null) ? <>{loadingComponent || null}</> : <Model schema={schema} schemaTransform={schemaTransform}>{children}</Model>
 }
 
 export {

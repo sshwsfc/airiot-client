@@ -67,7 +67,7 @@ const modelRegistry = {
 
 const getModel = (name: string, key: string | undefined, props: any): ModelSchema => {
   const model = modelRegistry.getModel(name)
-  if(!model) {
+  if (!model) {
     throw Error(`Model '${name}' not found!`)
   }
   return {
@@ -86,30 +86,30 @@ interface ModelInitialProps {
 }
 
 const ModelInitial = ({ model, initialValues, children, query }: ModelInitialProps) => {
-  const [ loading, setLoading ] = React.useState(true)
+  const [loading, setLoading] = React.useState(true)
 
   const initializeState = useAtomCallback(React.useCallback((_get, set) => {
     let initial = initialValues || {}
-    if(model.initialValues) {
+    if (model.initialValues) {
       let modelInitial = isFunction(model.initialValues) ? model.initialValues() : model.initialValues
       initial = { ...modelInitial, ...initial }
     }
-    const { wheres={}, ...option } = initial as any
+    const { wheres = {}, ...option } = initial as any
 
     const defaultOpt = {
-      fields: [ ...(model.listFields || []) ],
+      fields: [...(model.tableSchema || [])],
       order: model.defaultOrder || model.orders || {},
       limit: model.defaultPageSize || 15,
       skip: 0
     }
-    if(query && !isEmpty(query)) {
+    if (query && !isEmpty(query)) {
       const filterQuery = Object.keys(query).reduce((p: any, key) => {
-        if(key.startsWith('f_')) {
+        if (key.startsWith('f_')) {
           p[key.substring(2)] = query[key]
         }
         return p
       }, {})
-      if(!isEmpty(filterQuery)) {
+      if (!isEmpty(filterQuery)) {
         wheres.param_filter = filterQuery
       }
     }
@@ -131,42 +131,45 @@ export interface ModelProps {
   schema?: ModelSchema
   modelKey?: string
   initialValues?: any
+  schemaTransform?: (schema: any) => any
   children: React.ReactNode
   atoms?: ModelAtoms
   forceNewAtoms?: boolean
   props?: any
 }
 
-const Model = ({ name, schema, modelKey, initialValues, children, atoms: outterAtoms, forceNewAtoms, props: modelProps }: ModelProps) => {
+const Model = ({ name, schema, modelKey, initialValues, schemaTransform, children, atoms: outterAtoms, forceNewAtoms, props: modelProps }: ModelProps) => {
   const model = React.useMemo(() => {
-    const md =  name ? getModel(name, modelKey, modelProps) : {
+    const md = name ? getModel(name, modelKey, modelProps) : {
       ...schema,
       key: modelKey || schema?.name,
       ...modelProps
     } as ModelSchema
     let atoms: ModelAtoms
-    if(outterAtoms) {
+    if (outterAtoms) {
       atoms = outterAtoms
-    } else if(forceNewAtoms){
-      atoms = [ modelAtoms, ...modelRegistry.getModelAtoms() ].reduce((p, getAtoms) => {
-        return { ...p, ...getAtoms(id => `model.${md.key}.${id}`, md)}
+    } else if (forceNewAtoms) {
+      atoms = [modelAtoms, ...modelRegistry.getModelAtoms()].reduce((p, getAtoms) => {
+        return { ...p, ...getAtoms(id => `model.${md.key}.${id}`, md) }
       }, {} as ModelAtoms)
     } else {
-      if(!modelAtomsMap[md.key || '']) {
-        modelAtomsMap[md.key || ''] = [ modelAtoms, ...modelRegistry.getModelAtoms() ].reduce((p, getAtoms) => {
-          return { ...p, ...getAtoms(id => `model.${md.key}.${id}`, md)}
+      if (!modelAtomsMap[md.key || '']) {
+        modelAtomsMap[md.key || ''] = [modelAtoms, ...modelRegistry.getModelAtoms()].reduce((p, getAtoms) => {
+          return { ...p, ...getAtoms(id => `model.${md.key}.${id}`, md) }
         }, {} as ModelAtoms)
       }
       atoms = modelAtomsMap[md.key || '']
     }
     return { ...md, atoms }
-  }, [ name, schema, modelKey, outterAtoms, forceNewAtoms, modelProps ])
+  }, [name, schema, modelKey, outterAtoms, forceNewAtoms, modelProps])
 
   const api = createAPI(model as APIOptions)
 
-  return model && (
-    <ModelContext.Provider value={{ model, atoms: model.atoms!, api }}>
-      <ModelInitial initialValues={initialValues} model={model} >
+  const transformedSchema = schemaTransform ? schemaTransform(model) : model
+
+  return transformedSchema && (
+    <ModelContext.Provider value={{ model: transformedSchema, atoms: model.atoms!, api }}>
+      <ModelInitial initialValues={initialValues} model={transformedSchema} >
         {children}
       </ModelInitial>
     </ModelContext.Provider>

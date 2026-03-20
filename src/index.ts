@@ -54,6 +54,8 @@ export {
   createAPI
 }
 
+export * from './events'
+
 export * from './form'
 
 export * from './page'

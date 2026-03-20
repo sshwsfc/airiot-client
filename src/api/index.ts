@@ -192,8 +192,13 @@ function getHeaders(options: FetchOptions, context: AppContext, resource: string
   if (projectId) {
     hs['x-request-project'] = projectId.substring(3)
   } else {
+<<<<<<< HEAD
     if(getConfig().projectId){
       hs['x-request-project'] = getConfig().projectId as string
+=======
+    if (getConfig().projectId) {
+      hs['x-request-project'] = getConfig().projectId
+>>>>>>> gitlab/develop
     }
   }
 
@@ -359,7 +364,10 @@ export function createAPI(options: APIOptions, context?: AppContext): APIInstanc
       if (model.projectAll) {
         query.projectAll = true
       } else if (!isEmpty(f.fields) || model.projectFields) {
-        const allProject = [...(model.projectFields || []), ...(f.fields || [])]
+        const allProject = [
+          ...(model.projectFields || []),
+          ...(f.fields || []).map(field => field?.key || field).filter(field => Boolean(field))
+        ];
         const level1 = allProject && allProject.filter(k => k.indexOf('.') === -1)
         const level2 = allProject && allProject.filter(k => k.indexOf('.') > 0)
         const allow: string[] = []
@@ -445,10 +453,10 @@ export function createAPI(options: APIOptions, context?: AppContext): APIInstanc
               if (!(prev as any)['$and']) {
                 prev = { ...omit(prev, '$or'), '$and': [{ '$or': (prev as any)['$or'] }, cv] }
               } else {
-                ;(prev as any)['$and'].push(cv)
+                ; (prev as any)['$and'].push(cv)
               }
             } else if ((prev as any)['$and']) {
-              ;(prev as any)['$and'].push(cv)
+              ; (prev as any)['$and'].push(cv)
             } else {
               prev = { ...prev, ...cv }
             }
