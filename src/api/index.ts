@@ -193,7 +193,7 @@ function getHeaders(options: FetchOptions, context: AppContext, resource: string
     hs['x-request-project'] = projectId.substring(3)
   } else {
     if(getConfig().projectId){
-      hs['x-request-project'] = getConfig().projectId
+      hs['x-request-project'] = getConfig().projectId as string
     }
   }
 

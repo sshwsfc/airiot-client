@@ -67,6 +67,5 @@ export type {
 } from './model'
 
 export type {
-  UseFormPropsExtended,
-  UseFormSchemaProps
+  UseFormPropsExtended
 } from './form'

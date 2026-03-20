@@ -1,19 +1,13 @@
-import React, { useEffect, useCallback, useMemo } from 'react'
-import { useForm as useRHFForm, FormProvider, useFormContext } from 'react-hook-form'
-import { z } from 'zod'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { FormProvider, useFormContext, useForm as useRHFForm } from 'react-hook-form'
 
-import cloneDeep from 'lodash/cloneDeep'
-import isArray from 'lodash/isArray'
 import isEmpty from 'lodash/isEmpty'
-import isFunction from 'lodash/isFunction'
 import isNil from 'lodash/isNil'
 import isNumber from 'lodash/isNumber'
-import isPlainObject from 'lodash/isPlainObject'
 import some from 'lodash/some'
 
-import { schemaConvert, FormField } from './schema'
-import { findFieldByName } from './utils'
 import { fieldBuilder, objectBuilder } from './builder'
+import { findFieldByName } from './utils'
 
 // ============================================================================
 // Types
@@ -65,6 +59,30 @@ interface SchemaFormProps {
   onChange?: (values: any) => void
   onSubmitSuccess?: (values: any, form: FormMethods) => void
   onSubmit: (values: any, form: FormMethods, callback?: any) => any
+  [key: string]: any
+}
+interface FormField {
+  name: string
+  key?: string
+  label?: string
+  type?: string
+  fields?: FormField[]
+  component?: React.ComponentType<any>
+  group?: React.ComponentType<any>
+  validate?: any
+  effect?: any
+  items?: FormField
+  itemsRender?: any
+  render?: any
+  options?: Array<{ name: string; value: any }>
+  description?: string
+  maxlength?: number
+  minlength?: number
+  minimum?: number
+  maximum?: number
+  validationMessage?: string
+  readonly?: boolean
+  required?: boolean
   [key: string]: any
 }
 
@@ -405,72 +423,6 @@ const Form = ({
 }
 
 // ============================================================================
-// SchemaForm Component
-// ============================================================================
-
-const omitNull = (value: any): any => {
-  if (isPlainObject(value)) {
-    Object.keys(value).forEach((k) => {
-      let ret = omitNull(value[k])
-      if (ret == null) {
-        delete value[k]
-      } else {
-        value[k] = ret
-      }
-    })
-  } else if (isArray(value)) {
-    value.forEach(omitNull)
-  }
-  return value
-}
-
-const SchemaForm = (props: SchemaFormProps) => {
-  const { schema, validate, effect, fields: propFields, ...restProps } = props
-  const formRef = React.useRef<FormMethods>(null)
-
-  if (!isPlainObject(schema)) {
-    return null
-  }
-
-  // Convert schema to fields
-  const { fields: schemaFields } = schemaConvert(schema)
-
-  // Convert JSON Schema to Zod schema
-  const zodSchema = useMemo(() => {
-    try {
-      return z.fromJSONSchema(schema)
-    } catch (e) {
-      console.error('Failed to convert schema to Zod:', e)
-      return z.object({})
-    }
-  }, [schema])
-
-  // Create validator using Zod
-  const schemaValidate = useCallback((values: any) => {
-    const cleanedValues = omitNull(cloneDeep(values))
-
-    // Get Zod validation errors
-    const zodErrors = {}
-
-    // Merge with custom validation
-    let customErrors = validate && isFunction(validate) ? validate(cleanedValues) : {}
-
-    return isEmpty(zodErrors) ? customErrors : { ...customErrors, ...zodErrors }
-  }, [zodSchema, validate])
-
-  return (
-    <Form
-      {...restProps}
-      onSubmit={props.onSubmit}
-      validate={schemaValidate}
-      fields={propFields || schemaFields}
-      effect={effect || (schema as any).formEffect}
-      formRef={formRef as any}
-    />
-  )
-}
-
-// ============================================================================
 // useForm Hook
 // ============================================================================
 
@@ -499,5 +451,6 @@ const useForm = () => {
 // Exports
 // ============================================================================
 
-export { BaseForm, Form, SchemaForm, useForm, fieldBuilder, objectBuilder, schemaConvert }
-export type { BaseFormProps, FormProps, SchemaFormProps, FormField, FormMethods, FormState }
+export { BaseForm, fieldBuilder, Form, objectBuilder, useForm }
+export type { BaseFormProps, FormField, FormMethods, FormProps, FormState, SchemaFormProps }
+

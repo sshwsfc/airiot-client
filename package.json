@@ -37,7 +37,9 @@
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
     "@types/crypto-js": "^4.2.2",
+    "@types/lodash": "^4.17.24",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
@@ -50,7 +52,7 @@
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
-    "jotai": "^2.7.0",
+    "jotai": "2",
     "react": "^18.2.0 | 19",
     "react-dom": "^18.2.0 | 19",
     "react-router": "7",
@@ -58,7 +60,15 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "axios": "^1.13.6",
+    "dayjs": "^1.11.20",
+    "jotai": "^2.18.1",
+    "lodash": "^4.17.23",
+    "react": "19",
+    "react-dom": "19",
     "react-hook-form": "^7.71.1",
+    "react-router": "7",
+    "react-router-dom": "7",
     "zod": "^4.3.6"
   }
 }

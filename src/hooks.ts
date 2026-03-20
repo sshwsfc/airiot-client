@@ -8,9 +8,9 @@ export const getSettings = async () => {
 
   let url = 'core/setting/part'
 
-  if (isLogin) {
+  if (isLogin && user) {
     // admin用户 或者 有系统配置的权限
-    if (user.isSuper || user?.permissions?.indexOf('setting.view') > -1) {
+    if (user.isSuper || (Array.isArray(user.permissions) && user.permissions.indexOf('setting.view') > -1)) {
       url = 'core/setting' //全部字段信息
     } else {
       url = 'core/setting/login/part'

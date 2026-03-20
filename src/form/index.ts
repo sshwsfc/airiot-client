@@ -1,7 +1,5 @@
 export {
   useForm,
-  useFormSchema,
-  useFilterSchema,
   useFieldUIState,
   useFieldUIStateValue,
   useSetFieldUIState,
@@ -21,6 +19,5 @@ export {
 } from 'react-hook-form'
 
 export type {
-  UseFormPropsExtended,
-  UseFormSchemaProps
+  UseFormPropsExtended
 } from './hooks'

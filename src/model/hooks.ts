@@ -13,7 +13,6 @@ import { ModelContext, ModelAtoms, ModelContextType, ModelSchema } from './base'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useAtomCallback } from 'jotai/utils'
 import { Getter, Setter, Atom, WritableAtom } from 'jotai'
-import type { API } from '../api'
 
 // 提取的 useModel hook
 export const useModel = (): ModelContextType => {

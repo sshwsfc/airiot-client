@@ -1,6 +1,6 @@
 import React from 'react'
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form'
-import { FormField } from './schema'
+import { type FormField } from './base'
 
 // ============================================================================
 // Types

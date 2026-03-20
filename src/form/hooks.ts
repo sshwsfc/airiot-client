@@ -1,16 +1,11 @@
-import React from 'react'
-import isEqual from 'lodash/isEqual'
-import _ from 'lodash'
-import { atom, useAtom, useSetAtom, useAtomValue, createStore } from 'jotai'
+import { atom, createStore, useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { atomFamily } from 'jotai/utils'
-import { useForm as useRHFForm, type UseFormReturn, type UseFormProps, type FieldValues, Resolver } from 'react-hook-form'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from 'zod'
 import { Store } from 'jotai/vanilla/store'
-import { SchemaField, FormField } from './schema'
-import { convert as schemaConvert, filterConvert, type ConvertOptions } from './schema'
+import isEqual from 'lodash/isEqual'
+import React from 'react'
+import { Resolver, useForm as useRHFForm, type FieldValues, type UseFormProps, type UseFormReturn } from 'react-hook-form'
+import { FormField } from './base'
 import { useFormContext } from './context'
-import { getFieldProp } from '../model/utils'
 
 
 // ============================================================================
@@ -47,12 +42,6 @@ export interface UseFormPropsExtended extends UseFormProps {
 export interface UseFormReturnExtended extends UseFormReturn {
   store?: Store
   setFieldUIState?: (fieldName: string, update: any) => void
-}
-
-export interface UseFormSchemaProps extends UseFormPropsExtended {
-  schema: SchemaField
-  formSchema: FormField[]
-  option?: ConvertOptions
 }
 
 export interface UseFormSchemaReturn {
@@ -266,60 +255,4 @@ export function useForm(
   }, [onEffect, methods])
 
   return extendedMethods
-}
-
-/**
- * Hook to convert JSON Schema to form fields and Zod resolver
- * @param props - Schema configuration
- * @returns Form fields and Zod resolver
- *
- * @example
- * const { fields, resolver, defaultValues } = useFormSchema({
- *   schema: myJsonSchema
- * })
- *
- * // Use with react-hook-form
- * const methods = useForm({
- *   resolver,
- *   defaultValues
- * })
- */
-export function useFormSchema(
-  { schema, formSchema, option }: UseFormSchemaProps
-): UseFormSchemaReturn {
-  const zodSchema = React.useMemo(() => {
-    try {
-      return z.fromJSONSchema(schema as any)
-    } catch (e) {
-      console.error('Failed to convert schema to Zod:', e)
-      return z.object({})
-    }
-  }, [schema])
-
-  const fields = React.useMemo<FormField[]>(() => {
-    let convertSchema = (formSchema ? { ...schema, form: formSchema } : schema) as SchemaField
-    const result = schemaConvert(convertSchema, option)
-    return result.fields || []
-  }, [schema, formSchema, option])
-
-  const resolver = React.useMemo<Resolver<any, any>>(() => {
-    return zodResolver(zodSchema as any)
-  }, [zodSchema])
-
-  return {
-    fields,
-    resolver: resolver as any
-  }
-}
-
-export function useFilterSchema(
-  { schema, formSchema, option }: UseFormSchemaProps
-): { fields: FormField[] } {
-  const fields = React.useMemo(() => formSchema.map(filterField => {
-    const key = typeof filterField == 'string' ? filterField : (filterField.key || filterField.name)
-    const field = filterConvert(getFieldProp(schema, key), option)
-    return typeof filterField == 'string' ? field : _.merge(field, filterField)
-  }), [ formSchema, schema, option ])
-
-  return { fields }
 }

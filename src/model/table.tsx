@@ -11,16 +11,16 @@ interface State {
 
 const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initValues, children }: { tableId: string, loadingComponent?: React.ReactNode, initQuery?: any, initialValues?: any, children?: React.ReactNode }) => {
 
-  const [{ schema, tags, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
+  const [{ schema, loading }, setState] = useState<State>(() => ({ schema: undefined, tags: [], loading: true }))
   // Fetch table schema and tags
   const fetchTableSchemaAndTags = useCallback(async () => {
     setState({ schema: undefined, tags: [], loading: true })
     try {
-      const [table, tagResponse] = await Promise.all([
+      const [table, _tagResponse] = await Promise.all([
         api({ name: 'core/t/schema' }).get(tableId).then((payload: any) => payload),
         api({ name: `/core/t/schema/tag/${tableId}` }).fetch('')
       ])
-      const { json } = tagResponse
+      // const { json } = tagResponse
 
       if(table == null || table.schema == null) {
         throw new Error('Table schema not found')
@@ -104,7 +104,7 @@ const TableModel = ({ tableId, loadingComponent, initQuery, initialValues: initV
         },
       }
       
-      setState({ schema, tags: json?.tags || [], loading: false })
+      setState({ schema, tags: [], loading: false })
     } catch (error) {
       console.error('Failed to fetch table schema:', error)
       setState({ schema: undefined, tags: [], loading: false })

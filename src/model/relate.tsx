@@ -1,5 +1,5 @@
 import React from 'react'
-import { Model, modelRegistry, ModelSchema } from './base'
+import { modelRegistry, ModelSchema } from './base'
 
 export interface CheckboxesProps {
   input: {
@@ -17,8 +17,8 @@ export interface RelateContextType {
 const Checkboxes = (props: CheckboxesProps) => {
   const { input: { value, onChange }, field } = props
 
-  const [ loading, setLoading ] = React.useState(false)
-  const [ options, setOptions ] = React.useState<Array<{ value: any; label: string; item: any }>>([])
+  const [ loading ] = React.useState(false)
+  const [ options ] = React.useState<Array<{ value: any; label: string; item: any }>>([])
 
   const onCheckChange = React.useCallback((checked: boolean, option: any) => {
     if(checked) {
@@ -103,7 +103,7 @@ export interface RelateContainerProps {
 
 const RelateContainer = ({ id, children }: RelateContainerProps) => {
   const [ loading, setLoading ] = React.useState(true)
-  const [ data, setData ] = React.useState<any>(null)
+  const [ data ] = React.useState<any>(null)
 
   // TODO: Get model from context and load data
   React.useEffect(() => {
@@ -151,8 +151,7 @@ const relateModule = {
       const [ loading, setLoading ] = React.useState(false)
       const [ options, setOptions ] = React.useState<Array<{ value: any; label: string; item: any }>>([])
 
-      const loadOptions = React.useCallback((inputValue?: string) => {
-        const displayField = field.displayField || 'name'
+      const loadOptions = React.useCallback(() => {
         setLoading(true)
         // TODO: Implement API call
         // return api(field.schema)
