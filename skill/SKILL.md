@@ -1,7 +1,6 @@
 ---
-name: airiot
-description: "Complete AIRIOT Platform Development Guide - React TypeScript client with shadcn/ui framework, Vite build tool, and MCP server integration. Covers project initialization, development standards, and comprehensive client library usage including API client (createAPI, CRUD operations), Authentication (useLogin, useLogout, useUser), JSON Schema Forms (SchemaForm, FieldArray), Jotai-based State Management (Model, TableModel, useModel hooks), Page Hooks (usePageVar, useDatasourceValue), Real-time Data Subscription (Subscribe, useDataTag, useTableData), and Configuration (setConfig, useMessage)."
-version: "1.0.0"
+name: airiot-frontend
+description: "Complete AIRIOT Platform Development Guide - React TypeScript client with shadcn/ui framework, Vite build tool, and AIRIOT CLI tools. Covers project initialization, development standards, and comprehensive client library usage including API client (createAPI, CRUD operations), Authentication (useLogin, useLogout, useUser), Form Hooks (useForm, useFieldArray, Controller), Jotai-based State Management (Model, TableModel, useModel hooks), Page Hooks (usePageVar, useDatasourceValue, useDataVarValue), Real-time Data Subscription (Subscribe, useTag, useTableData), Event System (useEvents, useEvent), and Configuration (setConfig, useMessage)."
 ---
 
 # AIRIOT Platform Development Guide
@@ -25,29 +24,30 @@ AIRIOT frontend projects are built on **shadcn/ui framework** with **Vite** buil
 ### 1.2 Project Creation Command
 
 ```bash
-npx shadcn@latest create --preset "radix-mira" --template vite airiot-project
+npx shadcn@latest create --preset "mira" --template vite -n airiot-project -y
 ```
 
 **Core Configuration Parameters:**
-- `--preset "radix-mira"`: Use Radix Mira design style preset
+- `--preset "mira"`: Use Radix Mira design style preset
 - `--template vite`: Vite-based build tool template
-- `airiot-project`: Project name (can be modified as needed)
+- `-n airiot-project`: Project name (can be modified as needed)
+- `-y`: Automatically confirm prompts
 
 ### 1.3 Core Dependencies & Services
 
-#### 1.3.1 AIRIOT MCP Service Installation
+#### 1.3.1 AIRIOT CLI Installation
 
-The AIRIOT MCP (Model-Context-Protocol) service is the core backend component for communicating with the AIRIOT platform, following the Model-Controller-Provider (MCP) architecture.
+The AIRIOT CLI provides tools for connecting and interacting with the AIRIOT platform.
 
-**Start MCP Service:**
+**Install CLI:**
 
 ```bash
-npx @airiot/mcp-server
+npx @airiot/tools
 ```
 
-**Environment Variables Configuration:**
+**Configuration:**
 
-The MCP service requires the following environment variables. The system will prompt for configuration if not set:
+The CLI will guide you through the configuration process:
 
 ```bash
 # AIRIOT Server Configuration
@@ -61,20 +61,7 @@ AIRIOT_TOKEN=your-api-token
 # AIRIOT_PASSWORD=your-password
 ```
 
-**Configuration Description:**
-- **AIRIOT_BASE_URL**: AIRIOT platform server address
-- **AIRIOT_PROJECT_ID**: Project unique identifier
-- **Authentication (choose one)**:
-  - Use `AIRIOT_TOKEN` for API token authentication
-  - OR use `AIRIOT_USERNAME` and `AIRIOT_PASSWORD` for username/password authentication
-
-**Install MCP Server to AI Agent:**
-
-Install the MCP server to your AI agent's MCP server configuration based on the above information.
-
 #### 1.3.2 Install AIRIOT Client SDK
-
-Install the AIRIOT client toolkit package for type-safe, well-encapsulated platform functionality calls:
 
 ```bash
 npm i -s @airiot/client@latest
@@ -86,43 +73,33 @@ npm i -s @airiot/client@latest
 
 ### 2.1 Source Code Directory Structure
 
-All source code is located in the **`src`** directory with strict adherence to the following conventions:
+All source code is located in the **`src`** directory:
 
-| Directory Path | Purpose & File Type Description |
+| Directory Path | Purpose |
 | :--- | :--- |
-| `src/pages/` | Store all **page-level** components and routing files |
-| `src/blocks/` | Store **block-level** reusable components (large functional modules) |
-| `src/components/` | Store **business-level** common components |
-| `src/components/ui/` | Store **basic UI components** (shadcn/ui based components and business-independent pure presentation components) |
-| Other directories | Consistent with **shadcn/ui** project standard directory structure |
+| `src/pages/` | Page-level components and routing files |
+| `src/blocks/` | Block-level reusable components (large functional modules) |
+| `src/components/` | Business-level common components |
+| `src/components/ui/` | Basic UI components (shadcn/ui based) |
 
 ### 2.2 Development Standards
 
 #### 2.2.1 Component Naming Conventions
 
-- **Page Components**: Use PascalCase, filename matches component name, e.g., `UserManagementPage.tsx`
-- **Block Components**: Use PascalCase, e.g., `DataTable.tsx`
-- **Business Components**: Use PascalCase, e.g., `UserCard.tsx`
-- **UI Components**: Use kebab-case, e.g., `button.tsx`, `input.tsx`
+- **Page Components**: PascalCase, e.g., `UserManagementPage.tsx`
+- **Block Components**: PascalCase, e.g., `DataTable.tsx`
+- **Business Components**: PascalCase, e.g., `UserCard.tsx`
+- **UI Components**: kebab-case, e.g., `button.tsx`, `input.tsx`
 
-#### 2.2.2 File Organization Standards
+#### 2.2.2 Code Style Standards
 
-- **Organize by functional modules**: Related components placed in same directory
-- **Promote shared components**: Components used in multiple places should be in `components/` directory
-- **Isolate UI components**: Pure presentation components in `components/ui/` directory
-
-#### 2.2.3 Code Style Standards
-
-- **Use TypeScript**: All components and utility functions must use TypeScript
-- **Functional components**: Prioritize functional components and Hooks
-- **Props type definitions**: Use interface or type to define Props
-- **Import order**: Third-party libraries → Project internal modules → Type imports → Relative path imports
+- Use TypeScript for all components
+- Prioritize functional components and Hooks
+- Use interface or type for Props definitions
 
 ---
 
 ## Part 3: AIRIOT Client Usage Guide
-
-> **Note**: All content in this section, including API descriptions, code examples, and configuration parameters, is strictly based on the official technical documentation in the project's **`docs`** directory, ensuring authoritativeness, accuracy, and timeliness.
 
 ### 3.1 Core Modules Overview
 
@@ -130,13 +107,14 @@ The `@airiot/client` provides the following core modules:
 
 | Module | Description | Main APIs |
 |--------|-------------|-----------|
-| **API Module** | RESTful API client | `createAPI`, `query`, `get`, `save`, `delete` |
-| **Auth Module** | User authentication and session management | `useLogin`, `useLogout`, `useUser`, `useUserReg` |
-| **Form Module** | JSON Schema dynamic forms | `SchemaForm`, `Form`, `FieldArray`, `useForm` |
-| **Model Module** | Jotai-based state management | `Model`, `TableModel`, `useModelList`, `useModelGet` |
-| **Page Hooks** | Page-level state management | `usePageVar`, `useDatasourceValue`, `useDataVarValue` |
-| **Subscribe** | WebSocket real-time data subscription | `Subscribe`, `useDataTag`, `useTableData` |
-| **Config** | Global configuration management | `setConfig`, `getConfig`, `getSettings` |
+| **API Module** | RESTful API client | `createAPI`, `query`, `get`, `save`, `delete`, `count` |
+| **Auth Module** | User authentication | `useLogin`, `useLogout`, `useUser`, `useUserReg` |
+| **Form Module** | React Hook Form integration | `useForm`, `useFieldArray`, `Controller`, `useFieldUIState` |
+| **Model Module** | Jotai-based state management | `Model`, `TableModel`, `useModelList`, `useModelGet`, `useModelSave`, `useModelDelete` |
+| **Page Hooks** | Page-level state management | `usePageVar`, `useDatasourceValue`, `useDataVarValue`, `useSetPageVar` |
+| **Subscribe Module** | WebSocket real-time data | `Subscribe`, `useTag`, `useTableData`, `useSubscribeContext` |
+| **Event System** | Event-driven actions | `useEvents`, `useEvent`, `useEventsWithSpread` |
+| **Config Module** | Global configuration | `setConfig`, `getConfig`, `getSettings`, `useMessage` |
 
 ---
 
@@ -148,39 +126,40 @@ The `@airiot/client` provides the following core modules:
 import { createAPI } from '@airiot/client'
 
 const userApi = createAPI({
-  name: 'core/user',           // API name
-  resource: 'user',            // Resource path
+  name: 'core/user',           // API name (required)
+  resource: 'user',            // Resource path (required)
   headers: {},                 // Custom request headers
-  idProp: 'id',                // ID field name
+  idProp: 'id',                // ID field name (string or string array for composite id)
   convertItem: (item) => ({    // Data conversion function
     ...item,
     fullName: `${item.firstName} ${item.lastName}`
-  })
+  }),
+  apiMessage: true,            // Show API request messages
+  properties: {}               // Schema properties for query conversion
 })
 ```
 
 #### 3.2.2 Query Data
 
 ```typescript
-// Paginated query
+// Paginated query with where conditions
 const { items, total } = await userApi.query(
-  { skip: 0, limit: 10 },                    // Query options
-  { status: { $eq: 'active' } }              // Where conditions
+  { skip: 0, limit: 10, order: { createdAt: 'DESC' } },  // Query options
+  { status: { $eq: 'active' } }                          // Where conditions
 )
 
-// Sorted query
+// Query with fields projection
 const { items } = await userApi.query({
   skip: 0,
   limit: 20,
-  order: { createdAt: 'DESC' }              // Sort by creation time descending
+  fields: ['id', 'name', 'email']  // Only return specified fields
 })
 
-// Custom query
-const { items } = await userApi.query(
+// Query with count
+const { items, total } = await userApi.query(
   { skip: 0, limit: 10 },
-  null,                                     // No where conditions
-  true,                                     // Return total count
-  (api) => api.fetch('/custom/endpoint')   // Custom query
+  { status: 'active' },
+  true  // Return total count
 )
 ```
 
@@ -190,24 +169,31 @@ const { items } = await userApi.query(
 // Get single item
 const user = await userApi.get('user123')
 
-// Create data
+// Create new item
 const newUser = await userApi.save({
   name: 'John Doe',
   email: 'john@example.com'
 })
 
-// Update data
-const updatedUser = await userApi.save('user123', {
+// Update item (with id)
+const updatedUser = await userApi.save({
+  id: 'user123',
   name: 'Jane Doe'
 })
 
-// Delete data
+// Partial update (PATCH)
+const partialUpdate = await userApi.save(
+  { id: 'user123', status: 'inactive' },
+  true  // partial = true
+)
+
+// Delete single item
 await userApi.delete('user123')
 
-// Batch delete
+// Delete multiple items
 await userApi.delete(['id1', 'id2', 'id3'])
 
-// Count
+// Count items
 const count = await userApi.count({ status: { $eq: 'active' } })
 ```
 
@@ -221,24 +207,26 @@ const count = await userApi.count({ status: { $eq: 'active' } })
 import { useLogin } from '@airiot/client'
 
 function LoginForm() {
-  const { onLogin, loading, error } = useLogin()
+  const { onLogin, showCode, showExtra, resetVerifyCode } = useLogin()
 
   const handleLogin = async () => {
     try {
-      await onLogin({
+      const result = await onLogin({
         username: 'admin',
         password: 'password123',
-        remember: true                    // Remember me
+        verifyCode: '123456',  // Required if showCode is true
+        remember: true          // Use localStorage instead of sessionStorage
       })
-      console.log('Login successful')
+
+      if (result?.needChangePwd) {
+        // Redirect to change password page
+      }
     } catch (err) {
       console.error('Login failed:', err)
     }
   }
 
-  return <button onClick={handleLogin} disabled={loading}>
-    {loading ? 'Logging in...' : 'Login'}
-  </button>
+  return <button onClick={handleLogin}>Login</button>
 }
 ```
 
@@ -248,38 +236,51 @@ function LoginForm() {
 import { useUser } from '@airiot/client'
 
 function UserProfile() {
-  const { user, loading, loadUser, logout } = useUser()
+  const { user, setUser, loadUser, storageKey } = useUser()
 
   useEffect(() => {
-    loadUser()  // Load user info from localStorage
+    loadUser()  // Load user from localStorage/sessionStorage
   }, [])
-
-  if (loading) return <div>Loading...</div>
 
   return (
     <div>
       <p>Username: {user?.username}</p>
       <p>Email: {user?.email}</p>
-      <button onClick={logout}>Logout</button>
     </div>
   )
 }
 ```
 
-#### 3.3.3 User Registration
+#### 3.3.3 User Logout
+
+```typescript
+import { useLogout } from '@airiot/client'
+
+function LogoutButton() {
+  const { onLogout } = useLogout()
+
+  return <button onClick={onLogout}>Logout</button>
+}
+```
+
+#### 3.3.4 User Registration
 
 ```typescript
 import { useUserReg } from '@airiot/client'
 
 function RegisterForm() {
-  const { onReg, loading } = useUserReg()
+  const { onUserReg } = useUserReg()
 
   const handleRegister = async () => {
-    await onReg({
-      username: 'newuser',
-      password: 'password123',
-      email: 'newuser@example.com'
-    })
+    try {
+      await onUserReg({
+        username: 'newuser',
+        password: 'password123',
+        email: 'newuser@example.com'
+      })
+    } catch (err) {
+      console.error('Registration failed:', err)
+    }
   }
 
   return <button onClick={handleRegister}>Register</button>
@@ -288,98 +289,89 @@ function RegisterForm() {
 
 ---
 
-### 3.4 Form Module
+### 3.4 Form Module (React Hook Form)
 
-#### 3.4.1 SchemaForm Component
+The form module is based on **react-hook-form**. All form-related hooks are re-exported.
 
-Define forms using JSON Schema:
+#### 3.4.1 useForm Hook
 
 ```typescript
-import { SchemaForm } from '@airiot/client'
+import { useForm } from '@airiot/client'
 
-const userSchema = {
-  type: 'object',
-  properties: {
-    name: {
-      type: 'string',
-      title: 'Name'
-    },
-    email: {
-      type: 'string',
-      title: 'Email',
-      format: 'email'
-    },
-    age: {
-      type: 'number',
-      title: 'Age',
-      minimum: 0,
-      maximum: 150
+function MyForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      email: ''
     }
-  },
-  required: ['name', 'email']
-}
+  })
 
-function UserForm() {
-  const handleSubmit = (data: any) => {
-    console.log('Form data:', data)
+  const onSubmit = (data) => {
+    console.log(data)
   }
 
   return (
-    <SchemaForm
-      schema={userSchema}
-      onSubmit={handleSubmit}
-    />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('name', { required: 'Name is required' })} />
+      {errors.name && <span>{errors.name.message}</span>}
+      <input {...register('email', { required: 'Email is required' })} />
+      {errors.email && <span>{errors.email.message}</span>}
+      <button type="submit">Submit</button>
+    </form>
   )
 }
 ```
 
-#### 3.4.2 Custom Field Renderers
+#### 3.4.2 Field State Management
 
 ```typescript
-import { setFormFields } from '@airiot/client'
-import { CustomInput } from './CustomInput'
+import { useFieldUIState, setFieldVisibility, setFieldDisabled, setFieldLoading } from '@airiot/client'
 
-// Register custom field
-setFormFields({
-  custom: CustomInput
-})
+// Get field UI state
+const { visible, disabled, loading } = useFieldUIState('fieldName')
 
-// Use in Schema
-const schema = {
-  type: 'object',
-  properties: {
-    customField: {
-      type: 'custom',      // Use custom field
-      title: 'Custom Field'
-    }
-  }
-}
+// Set field visibility
+setFieldVisibility('fieldName', false)  // Hide field
+
+// Set field disabled state
+setFieldDisabled('fieldName', true)  // Disable field
+
+// Set field loading state
+setFieldLoading('fieldName', true)  // Show loading spinner
 ```
 
-#### 3.4.3 Array Fields
+#### 3.4.3 Field Arrays
 
 ```typescript
-import { FieldArray } from '@airiot/client'
+import { useFieldArray } from '@airiot/client'
 
 function PhoneNumbersForm() {
+  const { control, register } = useForm()
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'phoneNumbers'
+  })
+
   return (
-    <FieldArray
-      name="phoneNumbers"
-      schema={{
-        type: 'object',
-        properties: {
-          type: { type: 'string', enum: ['home', 'work', 'mobile'] },
-          number: { type: 'string', title: 'Number' }
-        }
-      }}
-    />
+    <div>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          <input {...register(`phoneNumbers.${index}.type`)} />
+          <input {...register(`phoneNumbers.${index}.number`)} />
+          <button onClick={() => remove(index)}>Remove</button>
+        </div>
+      ))}
+      <button onClick={() => append({ type: 'mobile', number: '' })}>
+        Add Phone
+      </button>
+    </div>
   )
 }
 ```
 
 ---
 
-### 3.5 Model Module
+### 3.5 Model Module (Jotai State Management)
 
 #### 3.5.1 Model Component
 
@@ -388,28 +380,26 @@ import { Model } from '@airiot/client'
 
 const userModel = {
   name: 'user',
-  state: {
-    list: [],
-    selected: null
+  title: 'User',
+  resource: 'core/user',
+  properties: {
+    name: { type: 'string', title: 'Name' },
+    email: { type: 'string', title: 'Email' }
   },
-  operations: {
-    query: async () => {
-      const { items } = await userApi.query({ skip: 0, limit: 100 })
-      return items
-    }
+  permission: {
+    add: true,
+    edit: true,
+    delete: true,
+    view: true
   }
 }
 
 function UserList() {
-  const { list, query } = useModel()
-
-  useEffect(() => {
-    query()
-  }, [])
+  const { items, loading } = useModelList()
 
   return (
     <ul>
-      {list.map(user => (
+      {items.map(user => (
         <li key={user.id}>{user.name}</li>
       ))}
     </ul>
@@ -418,7 +408,7 @@ function UserList() {
 
 function App() {
   return (
-    <Model model={userModel}>
+    <Model name="user">
       <UserList />
     </Model>
   )
@@ -437,8 +427,10 @@ function DynamicTable() {
     <TableModel
       tableId="device-table"
       loadingComponent={<div>Loading...</div>}
+      initQuery={{ skip: 0, limit: 20 }}
+      initialValues={{ archived: true }}
     >
-      <DataGrid />
+      <UserList />
     </TableModel>
   )
 }
@@ -448,30 +440,96 @@ function DynamicTable() {
 
 ```typescript
 import {
-  useModelList,
-  useModelGet,
-  useModelSave,
-  useModelDelete,
-  useModelCount
+  useModelList,        // Get list data with auto-loading
+  useModelGet,         // Get single item by id
+  useModelSave,        // Save item (create or update)
+  useModelDelete,      // Delete item
+  useModelGetItems,    // Manual query with filters
+  useModelItem,        // Combined get/save/delete hooks
+  useModelQuery,       // Simple query hook
+  useModelPermission,  // Get model permissions
+  useModelEvent,       // Get model event handlers
+  useModelPagination,  // Pagination controls
+  useModelCount,       // Get total count
+  useModelPageSize,    // Page size controls
+  useModelFields,      // Field display controls
+  useModelSelect,      // Selection management
+  useModelListRow,     // Single row hooks
+  useModelListHeader,  // Header hooks
+  useModelListOrder,   // Sorting hooks
+  useModelListItem     // Single cell hooks
 } from '@airiot/client'
 
+// Example: useModelList
 function UserManagement() {
-  // Get list data
-  const { items, loading, query } = useModelList()
+  const { items, loading, selected, fields } = useModelList()
 
-  // Get single item
-  const { data, get } = useModelGet()
+  return (
+    <div>
+      {loading ? <div>Loading...</div> : null}
+      <table>
+        {fields.map(field => (
+          <th key={field}>{field}</th>
+        ))}
+        {items.map(user => (
+          <tr key={user.id}>
+            <td>{user.name}</td>
+          </tr>
+        ))}
+      </table>
+    </div>
+  )
+}
 
-  // Save data
-  const { save, saving } = useModelSave()
+// Example: useModelGet
+function UserEdit({ id }) {
+  const { data, loading, model } = useModelGet({ id })
 
-  // Delete data
-  const { remove } = useModelDelete()
+  if (loading) return <div>Loading...</div>
 
-  // Count
-  const { count } = useModelCount()
+  return (
+    <form>
+      <h1>{model.title}</h1>
+      {/* Form fields */}
+    </form>
+  )
+}
 
-  return <div>...</div>
+// Example: useModelSave
+function UserForm() {
+  const { saveItem } = useModelSave()
+
+  const handleSubmit = async (data) => {
+    try {
+      const saved = await saveItem(data)
+      console.log('Saved:', saved)
+    } catch (err) {
+      console.error('Save failed:', err)
+    }
+  }
+
+  return <form onSubmit={handleSubmit}>...</form>
+}
+
+// Example: useModelDelete
+function UserDeleteButton({ id }) {
+  const { deleteItem } = useModelDelete({ id })
+
+  return <button onClick={() => deleteItem()}>Delete</button>
+}
+
+// Example: useModelGetItems
+function UserSearch() {
+  const { getItems } = useModelGetItems()
+
+  const handleSearch = async (keyword) => {
+    const { items, total } = await getItems({
+      option: { skip: 0, limit: 10 },
+      wheres: { name: { $regex: keyword } }
+    })
+  }
+
+  return <input onChange={(e) => handleSearch(e.target.value)} />
 }
 ```
 
@@ -495,7 +553,6 @@ function SettingsPage() {
   return (
     <div>
       <p>Current theme: {theme}</p>
-      <p>Current language: {language}</p>
       <button onClick={() => setTheme('dark')}>
         Switch to dark theme
       </button>
@@ -526,9 +583,12 @@ function DataView() {
     </ul>
   )
 }
+
+// Access nested properties
+const userName = useDatasourceValue('users.0.name')  // Get first user's name
 ```
 
-#### 3.6.3 Component Context
+#### 3.6.3 Component Context (Data Variables)
 
 ```typescript
 import { useDataVarValue, useSetDataVar } from '@airiot/client'
@@ -546,6 +606,18 @@ function ComponentWrapper({ children }) {
 function Chart() {
   const data = useDataVarValue('chart1')
   return <div>{JSON.stringify(data)}</div>
+}
+```
+
+#### 3.6.4 Cell Data Context
+
+```typescript
+import { useCellDataValue } from '@airiot/client'
+
+function TableCell() {
+  const cellData = useCellDataValue()
+  // Access table data context in cell components
+  console.log(cellData?.tableData)
 }
 ```
 
@@ -569,18 +641,19 @@ function App() {
 }
 ```
 
-#### 3.7.2 Auto-subscribe Data Tags
+#### 3.7.2 Subscribe Data Tags
 
 ```typescript
-import { useDataTag } from '@airiot/client'
+import { useTag } from '@airiot/client'
 
 function DeviceMonitor() {
-  const temperature = useDataTag({
+  const temperature = useTag({
     tableId: 'device-table',
     dataId: 'device-001',
     tagId: 'temperature'
   })
 
+  // Auto-subscription when component mounts
   return (
     <div>
       <p>Temperature: {temperature?.value}°C</p>
@@ -593,11 +666,11 @@ function DeviceMonitor() {
 #### 3.7.3 Manual Subscription Management
 
 ```typescript
-import { useSubscribeContext, useDataTagValue } from '@airiot/client'
+import { useSubscribeContext, useTagValue } from '@airiot/client'
 
 function CustomMonitor() {
   const { subscribeTags } = useSubscribeContext()
-  const temperature = useDataTagValue({
+  const temperature = useTagValue({
     tableId: 'device-table',
     dataId: 'device-001',
     tagId: 'temperature'
@@ -630,11 +703,163 @@ function DeviceInfo() {
 }
 ```
 
+#### 3.7.5 Update Tags and Data
+
+```typescript
+import {
+  useUpdateTags,
+  useUpdateData,
+  useUpdateReference
+} from '@airiot/client'
+
+function TagUpdater() {
+  const updateTags = useUpdateTags()
+  const updateData = useUpdateData()
+  const updateReference = useUpdateReference()
+
+  const handleUpdate = () => {
+    // Update tag values
+    updateTags({
+      'table|data|tag': { value: 100, quality: 'good' }
+    })
+
+    // Update data values
+    updateData({
+      'table|data': { name: 'Updated Name' }
+    })
+
+    // Update reference/computed values
+    updateReference({
+      tableId: 'table1',
+      tableDataId: 'data1',
+      field: 'computedField',
+      value: 'result'
+    })
+  }
+
+  return <button onClick={handleUpdate}>Update</button>
+}
+```
+
 ---
 
-### 3.8 Configuration Module
+### 3.8 Event System
 
-#### 3.8.1 Global Configuration
+The event system provides a declarative way to handle user interactions and execute actions.
+
+#### 3.8.1 useEvents Hook
+
+```typescript
+import { useEvents } from '@airiot/client'
+
+function MyButton() {
+  const events = useEvents({
+    click: [
+      {
+        type: 'changeVar',
+        params: { var: { counter: 1 } }
+      },
+      {
+        type: 'pageJump',
+        params: { url: '/detail', openWay: '_self' }
+      }
+    ],
+    doubleClick: [
+      {
+        type: 'sendRequest',
+        params: {
+          url: '/api/action',
+          method: 'POST'
+        }
+      }
+    ]
+  })
+
+  return (
+    <button onClick={events.click} onDoubleClick={events.doubleClick}>
+      Click Me
+    </button>
+  )
+}
+```
+
+#### 3.8.2 useEvent Hook
+
+```typescript
+import { useEvent } from '@airiot/client'
+
+function SingleEventButton() {
+  const { handler, loading, error } = useEvent('click', [
+    {
+      type: 'changeVar',
+      params: { varValue: { status: 'active' } },
+      confirm: {
+        title: 'Confirm',
+        message: 'Are you sure?'
+      }
+    }
+  ])
+
+  return (
+    <button onClick={handler} disabled={loading}>
+      {loading ? 'Processing...' : 'Execute'}
+      {error && <span>Error: {error}</span>}
+    </button>
+  )
+}
+```
+
+#### 3.8.3 useEventsWithSpread Hook
+
+```typescript
+import { useEventsWithSpread } from '@airiot/client'
+
+function SpreadEvents() {
+  const events = useEventsWithSpread({
+    click: [{ type: 'changeVar', params: { var: { count: 1 } } }],
+    mouseEnter: [{ type: 'changeVar', params: { var: { hover: true } } }]
+  })
+
+  // Spread events directly on element
+  return <div {...events}>Hover or Click Me</div>
+}
+```
+
+#### 3.8.4 Action Types
+
+```typescript
+// Available action types:
+type ActionType =
+  | 'pageJump'          // Navigate to another page
+  | 'changeVar'         // Modify page variables
+  | 'changeTableData'   // Modify table data
+  | 'changeDict'        // Modify data dictionary
+  | 'changeDataPoint'   // Modify data point configuration
+  | 'changeSystemSetting' // Modify system settings
+  | 'changeUser'        // Modify user data
+  | 'callFlow'          // Call workflow
+  | 'executeCommand'    // Execute command
+  | 'sendRequest'       // Send HTTP request
+```
+
+#### 3.8.5 Event Context
+
+```typescript
+// Event context provides functions for actions
+interface EventContext {
+  eventType: EventType        // Current event type
+  eventParams?: React.SyntheticEvent  // Event parameters
+  eventFunctions: {
+    setPageVar: (path: string, value: any) => void
+  }
+}
+```
+
+---
+
+### 3.9 Configuration Module
+
+#### 3.9.1 Global Configuration
 
 ```typescript
 import { setConfig, getConfig } from '@airiot/client'
@@ -642,7 +867,9 @@ import { setConfig, getConfig } from '@airiot/client'
 // Set global config
 setConfig({
   language: 'zh-CN',
-  module: 'admin'
+  module: 'admin',
+  rest: '/api/',
+  projectId: 'project-123'
 })
 
 // Get config
@@ -650,25 +877,7 @@ const config = getConfig()
 console.log(config.language)  // 'zh-CN'
 ```
 
-#### 3.8.2 Server Settings
-
-```typescript
-import { getSettings } from '@airiot/client'
-
-function SettingsLoader() {
-  const [settings, setSettings] = useState(null)
-
-  useEffect(() => {
-    getSettings().then(data => {
-      setSettings(data)
-    })
-  }, [])
-
-  return <div>{JSON.stringify(settings)}</div>
-}
-```
-
-#### 3.8.3 Message Notifications
+#### 3.9.2 Toast Messages
 
 ```typescript
 import { useMessage } from '@airiot/client'
@@ -679,27 +888,123 @@ function MessageExample() {
   return (
     <>
       <button onClick={() => message.success('Operation successful')}>
-        Success message
+        Success
       </button>
       <button onClick={() => message.error('Operation failed')}>
-        Error message
+        Error
       </button>
       <button onClick={() => message.warning('Warning message')}>
-        Warning message
+        Warning
       </button>
       <button onClick={() => message.info('Info message')}>
-        Info message
+        Info
       </button>
     </>
   )
 }
 ```
 
+#### 3.9.3 Server Settings
+
+```typescript
+import { getSettings, useUser } from '@airiot/client'
+
+function SettingsLoader() {
+  const { user } = useUser()
+  const [settings, setSettings] = useState(null)
+
+  useEffect(() => {
+    // Note: getSettings requires user context
+    getSettings().then(data => {
+      setSettings(data)
+    })
+  }, [user])
+
+  return <div>{JSON.stringify(settings)}</div>
+}
+```
+
+#### 3.9.4 Configuration Types
+
+```typescript
+interface Config {
+  rest?: string              // REST API base path
+  projectId?: string         // Project ID
+  user?: UserInfo            // Current user
+  toast?: ToastComponent     // Toast notification
+  language?: string          // Language code
+  module?: string            // Module name
+  settings?: AppSettings     // App settings
+}
+
+interface UserInfo {
+  id?: string
+  username?: string
+  name?: string
+  email?: string
+  token?: string
+  isSuper?: boolean
+  permissions?: string[]
+  isFirstLogin?: boolean
+}
+
+interface AppSettings {
+  safeRequest?: boolean
+  notShowCodeAdmin?: boolean
+  userExpand?: {
+    needChangePwd?: boolean
+    passwordExpireDays?: number
+    minPasswordLength?: number
+  }
+  theme?: {
+    mode?: 'light' | 'dark' | 'auto'
+    primaryColor?: string
+  }
+}
+```
+
 ---
 
-### 3.9 Common Usage Patterns
+### 3.10 Common Usage Patterns
 
-#### 3.9.1 Authenticated Route Protection
+#### 3.10.1 Complete CRUD Example
+
+```typescript
+import { Model, useModelList, useModelSave, useModelDelete } from '@airiot/client'
+
+function UserManagement() {
+  const { items, loading } = useModelList()
+  const { saveItem } = useModelSave()
+  const { deleteItem } = useModelDelete()
+
+  const handleCreate = async (data: any) => {
+    await saveItem(data)
+  }
+
+  const handleDelete = async (id: string) => {
+    await deleteItem(id)
+  }
+
+  if (loading) return <div>Loading...</div>
+
+  return (
+    <div>
+      <UserForm onSubmit={handleCreate} />
+      <UserTable data={items} onDelete={handleDelete} />
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Model name="user">
+      <UserManagement />
+    </Model>
+  )
+}
+```
+
+#### 3.10.2 Protected Route
 
 ```typescript
 import { useUser } from '@airiot/client'
@@ -712,247 +1017,31 @@ function ProtectedRoute({ children }) {
 
   return children
 }
+```
 
-// Usage
+---
+
+### 3.11 Best Practices
+
+#### 3.11.1 Model State Management
+
+```typescript
+// Always use hooks inside Model Provider
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
-  )
-}
-```
-
-#### 3.9.2 Complete CRUD Example
-
-```typescript
-import { createAPI } from '@airiot/client'
-import { Model, useModelList, useModelSave, useModelDelete } from '@airiot/client'
-
-const userApi = createAPI({
-  name: 'core/user',
-  resource: 'user'
-})
-
-function UserManagement() {
-  const { items, loading, query } = useModelList()
-  const { save, saving } = useModelSave()
-  const { remove } = useModelDelete()
-
-  // Query user list
-  useEffect(() => {
-    query()
-  }, [])
-
-  // Create user
-  const handleCreate = async (data: any) => {
-    await save(data)
-    query()  // Refresh list
-  }
-
-  // Delete user
-  const handleDelete = async (id: string) => {
-    await remove(id)
-    query()  // Refresh list
-  }
-
-  if (loading) return <div>Loading...</div>
-
-  return (
-    <div>
-      <UserForm onSubmit={handleCreate} loading={saving} />
-      <UserTable data={items} onDelete={handleDelete} />
-    </div>
-  )
-}
-```
-
-#### 3.9.3 Infinite Scroll
-
-```typescript
-import { useModelList } from '@airiot/client'
-
-function InfiniteList() {
-  const { items, loading, query, hasMore } = useModelList()
-  const [page, setPage] = useState(0)
-
-  const loadMore = () => {
-    const nextPage = page + 1
-    query({ skip: nextPage * 20, limit: 20 })
-    setPage(nextPage)
-  }
-
-  return (
-    <div>
-      {items.map(item => (
-        <div key={item.id}>{item.name}</div>
-      ))}
-      {hasMore && (
-        <button onClick={loadMore} disabled={loading}>
-          {loading ? 'Loading...' : 'Load more'}
-        </button>
-      )}
-    </div>
-  )
-}
-```
-
----
-
-### 3.10 Best Practices
-
-#### 3.10.1 Error Handling
-
-```typescript
-import { useLogin } from '@airiot/client'
-
-function LoginForm() {
-  const { onLogin, error } = useLogin()
-
-  const handleSubmit = async () => {
-    try {
-      await onLogin({ username, password })
-      // Success handling
-    } catch (err) {
-      console.error('Login failed:', err)
-      // Error handling
-    }
-  }
-
-  return (
-    <>
-      {error && <div className="error">{error.message}</div>}
-      <form onSubmit={handleSubmit}>...</form>
-    </>
-  )
-}
-```
-
-#### 3.10.2 Performance Optimization
-
-```typescript
-import { useCallback, useMemo } from 'react'
-import { useModelList } from '@airiot/client'
-
-function OptimizedList() {
-  const { items } = useModelList()
-
-  // Use useMemo to cache computed results
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-  }, [items])
-
-  // Use useCallback to cache callback functions
-  const handleClick = useCallback((id: string) => {
-    console.log('Clicked:', id)
-  }, [])
-
-  return (
-    <ul>
-      {sortedItems.map(item => (
-        <li key={item.id} onClick={() => handleClick(item.id)}>
-          {item.name}
-        </li>
-      ))}
-    </ul>
-  )
-}
-```
-
-#### 3.10.3 TypeScript Type Safety
-
-```typescript
-import { createAPI } from '@airiot/client'
-
-// Define data type
-interface User {
-  id: string
-  name: string
-  email: string
-  createdAt: string
-}
-
-// Define API type
-const userApi = createAPI<User>({
-  name: 'core/user',
-  resource: 'user',
-  convertItem: (item) => ({
-    ...item,
-    fullName: `${item.firstName} ${item.lastName}`
-  })
-})
-
-// Use with type hints
-async function getUser() {
-  const user = await userApi.get('id')
-  console.log(user?.name)  // TypeScript knows this is string type
-}
-```
-
----
-
-### 3.11 Troubleshooting
-
-#### Q: How to debug API requests?
-
-A: Use `apiMessage: true` to enable API messages:
-
-```typescript
-const api = createAPI({
-  name: 'core/user',
-  resource: 'user',
-  apiMessage: true  // Show API request messages
-})
-```
-
-#### Q: Form validation not working?
-
-A: Ensure JSON Schema correctly defines `required` array and validation rules:
-
-```typescript
-const schema = {
-  type: 'object',
-  required: ['name', 'email'],  // Required fields
-  properties: {
-    email: {
-      type: 'string',
-      format: 'email'  // Email format validation
-    }
-  }
-}
-```
-
-#### Q: Model state not updating?
-
-A: Ensure hooks are used inside Model Provider:
-
-```typescript
-function MyComponent() {
-  return (
-    <Model model={userModel}>
-      <UserList />  {/* Correct: inside Provider */}
+    <Model name="user">
+      <UserList />  {/* Correct */}
     </Model>
   )
 }
 
-// Wrong: cannot use useModel hooks outside Provider
+// Wrong: cannot use hooks outside Provider
 ```
 
-#### Q: Data subscription not updating?
-
-A: Ensure inside Subscribe Provider:
+#### 3.11.2 Subscribe Context
 
 ```typescript
+// Always wrap with Subscribe Provider
 function App() {
   return (
     <Subscribe>
@@ -962,80 +1051,131 @@ function App() {
 }
 ```
 
+#### 3.11.3 TypeScript Type Safety
+
+```typescript
+import { createAPI } from '@airiot/client'
+
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+const userApi = createAPI<User>({
+  name: 'core/user',
+  resource: 'user'
+})
+
+// TypeScript will infer correct types
+async function getUser() {
+  const user = await userApi.get('id')
+  console.log(user?.name)  // Type is string
+}
+```
+
 ---
 
-### 3.12 Related Documentation
+### 3.12 Troubleshooting
 
-For complete API documentation and examples, refer to:
+#### Q: API requests not working?
 
-- [API Module](./api.md) - API module details
-- [Auth Module](./auth.md) - Authentication guide
-- [Form Module](./form.md) - Form module
-- [Model Module](./model.md) - State management
-- [Page Hooks](./page-hooks.md) - Page-level hooks
-- [Subscribe](./subscribe.md) - Real-time subscriptions
-- [Getting Started](./getting-started.md) - Quick start guide
-- [Examples](./examples.md) - Usage examples
+A: Check if user is authenticated:
+
+```typescript
+import { useUser } from '@airiot/client'
+
+const { user } = useUser()
+console.log('User token:', user?.token)
+```
+
+#### Q: Form validation not working?
+
+A: Ensure proper validation rules:
+
+```typescript
+const { register } = useForm()
+<input
+  {...register('email', {
+    required: 'Email is required',
+    pattern: {
+      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+      message: 'Invalid email'
+    }
+  })}
+/>
+```
+
+#### Q: Data subscription not updating?
+
+A: Ensure SubscribeProvider is wrapping the component:
+
+```typescript
+<Subscribe>
+  <YourComponent />
+</Subscribe>
+```
 
 ---
 
 ## Appendix
 
-### A. Complete Dependency List
+### A. Complete Type Definitions
 
-```json
-{
-  "dependencies": {
-    "@airiot/client": "latest",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.12.0",
-    "jotai": "^2.7.0"
+```typescript
+// API Options
+interface APIOptions {
+  name: string
+  resource: string
+  proxyKey?: string
+  headers?: Record<string, string>
+  idProp?: string | string[]
+  convertItem?: (item: any) => any
+  queryParams?: Record<string, any>
+  projectAll?: boolean
+  projectFields?: string[]
+  customQuery?: (api: any, filter: any, wheres: any, convertItem: any) => Promise<any>
+  apiMessage?: boolean
+  properties?: Record<string, SchemaProperty>
+}
+
+// Query Options
+interface QueryOptions {
+  order?: Record<string, 'ASC' | 'DESC'>
+  skip?: number
+  limit?: number
+  groupBy?: string
+  fields?: string[]
+}
+
+// Model Schema
+interface ModelSchema {
+  name?: string
+  key?: string
+  title?: string
+  icon?: string
+  permission?: {
+    view?: boolean
+    add?: boolean
+    edit?: boolean
+    delete?: boolean
   }
+  initialValues?: any | (() => any)
+  listFields?: string[]
+  defaultOrder?: any
+  orders?: any
+  defaultPageSize?: number
+  properties?: Record<string, any>
+  displayField?: string
+  components?: Record<string, React.ComponentType<any>>
+  atoms?: ModelAtoms
+  blocks?: Record<string, (...args: any[]) => any>
+  events?: Record<string, (...args: any[]) => any>
 }
-```
-
-### B. TypeScript Configuration
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
-}
-```
-
-### C. Environment Variables Reference
-
-```bash
-# .env.local
-
-# AIRIOT API Configuration
-AIRIOT_API_TARGET=http://localhost:8080/
-AIRIOT_API_PORT=3000
-
-# Development Mode
-VITE_DEV=true
 ```
 
 ---
 
-**Document Version**: v1.0.0
-**Last Updated**: 2025-01-24
+**Document Version**: v1.2.0
+**Last Updated**: 2025-03-21
 **Maintained By**: AIRIOT Development Team
