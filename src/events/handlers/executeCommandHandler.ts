@@ -182,14 +182,14 @@ export const executeCommandHandler: ActionHandler = async (
           type: commandBatchType || 'sync'  // 添加缺失的 type 参数
         }
 
-        await sendAPI.fetch('', {
+        const response = await sendAPI.fetch('', {
           method: 'POST',
           noMessage: true,
           body: JSON.stringify(data)
         })
 
         showResultMessage({ success: true }, params)
-        return { success: true, data: sendAPI.response?.json || {} }
+        return { success: true, data: response?.json || {} }
       } else { // 同步批量 - 使用串行或并行执行
         if (commandStyle) {
           // 查询符合条件的节点

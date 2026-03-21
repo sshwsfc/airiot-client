@@ -20,15 +20,11 @@ export function showResultMessage(
 
   if (result.success) {
     if (resultConfig.successMess !== false) {
-      toast.success(resultConfig.successContent || '操作成功', {
-        duration: resultConfig.successTime || 3000,
-      })
+      toast.success(resultConfig.successContent || '操作成功')
     }
   } else {
     if (resultConfig.errorMess !== false) {
-      toast.error(resultConfig.errorContent || result.error || '操作失败', {
-        duration: resultConfig.errorTime || 3000,
-      })
+      toast.error(resultConfig.errorContent || result.error || '操作失败')
     }
   }
 }

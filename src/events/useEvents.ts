@@ -172,7 +172,7 @@ export function useEventsWithSpread(config: EventConfig = {}) {
       }
       const reactEventName = eventTypeToReactEvent[eventType as EventType]
       if (reactEventName && typeof handler === 'function') {
-        result[reactEventName] = handler
+        result[reactEventName] = handler as (e?: React.SyntheticEvent) => Promise<void>
       }
     }
 
