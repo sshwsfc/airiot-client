@@ -16,7 +16,7 @@ export const changeVarHandler: ActionHandler = async (
 
     if (context.eventFunctions?.setPageVar) {
       // setPageVar 一定支持函数式更新 
-      context.eventFunctions.setPageVar(varPath, varValue)
+      context.eventFunctions.setPageVar(state => ({ ..._.set(state, varPath, varValue) }))
     } else {
       throw new Error('EventContext 必须包含 eventFunctions.setPageVar 函数来设置页面变量')
     }
