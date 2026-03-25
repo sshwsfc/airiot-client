@@ -168,8 +168,15 @@ export interface EventConfig {
 
 /** 事件函数集合 */
 export interface EventFunctions {
-  /** 设置页面变量 */
-  setPageVar?: (path: string, value: any) => void
+  /**
+   * 设置页面变量
+   * @param path 变量路径 / 状态更新函数
+   * @param value 可选，仅当第一个参数是路径时传入
+   */
+  setPageVar: (
+    path: string | ((state: any) => any),
+    value?: any
+  ) => void;
 }
 
 /** 事件执行上下文 */
